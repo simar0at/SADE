@@ -45,13 +45,15 @@ body {
 
 /* ********************* */
 /* layout switcher (radio buttons) */
-         
+
 #col-layout-1c,
 #col-layout-2c,
 #col-layout-3c,
+#col-layout-auto,
 #col-layout-1c ~ label,
 #col-layout-2c ~ label,
-#col-layout-3c ~ label {
+#col-layout-3c ~ label,
+#col-layout-auto ~ label {
     position: fixed;
     font-size: 12px;
     background-color: lightgray;
@@ -72,15 +74,20 @@ body {
     top: 44px;
 }
 
+#col-layout-auto,
+#col-layout-auto ~ label {
+    top: 66px;
+}
+
 .col-layout-label {
     left: 20px;
 }
-            
+
 /* ********************* */
 /* header */
 #header {
-  margin-bottom: 1em;
-  min-height:90px;
+    margin-bottom: 1em;
+    min-height:90px;
 }
 #site-name{
     display:inline;
@@ -97,7 +104,7 @@ body {
 /* ********** */
 /* menu */
 #menu{
-/*    display:inline;*/
+    /*    display:inline;*/
 }
 #top-menu{
     display:inline;
@@ -120,7 +127,7 @@ body {
 }
 /*******************/
 /* site part show/hide */
-            
+
 #main-hidden ~ *,            
 #navigation-hidden ~ * {                
     display: none;
@@ -136,14 +143,31 @@ body {
     position: absolute;
     right: 1em;
     top:0;
+    /* hide the check boxes*/
+    width: 1px;
+    height: 1px;
+    opacity: 0;
 }
 
 #main-showing, #navigation-showing,
 #main-hidden, #navigation-hidden {
     padding: 0.2em;
     position: absolute;
-    right: 0;
+    right: 0.2em;
     top: 0;
+    display: inline-block;
+    -webkit-box-shadow: 0.2em 0.2em 0.1em 0px rgba(50, 50, 50, 1);
+    -moz-box-shadow:    0.2em 0.2em 0.1em 0px rgba(50, 50, 50, 1);
+    box-shadow:         0.2em 0.2em 0.1em 0px rgba(50, 50, 50, 1);
+    text-align: center;
+    background: #EEE;
+}
+
+#main-showing:active, #navigation-showing:active,
+#main-hidden:active, #navigation-hidden:active {
+    -webkit-box-shadow: 0 0 0 0px rgba(50, 50, 50, 1);
+    -moz-box-shadow:    0 0 0 0px rgba(50, 50, 50, 1);
+    box-shadow:         0 0 0 0px rgba(50, 50, 50, 1);    
 }
 
 #main-showing, #navigation-showing {    
@@ -163,7 +187,7 @@ body {
 #navigation-show:checked ~ #navigation-hidden {
     display: none;
 }
-    
+
 /*******************/
 /* main */
 
@@ -173,7 +197,7 @@ body {
     max-width:600px;
     padding:10px;
     margin-left: 5%;
-/*    clear:both;*/
+    /*    clear:both;*/
 }
 
 .intro-image {
@@ -187,9 +211,9 @@ body {
 /* resource overview */
 
 .data-view.metadata {
-/*    display: table-cell;
-    vertical-align: top;
-    clear: both; */
+    /*    display: table-cell;
+        vertical-align: top;
+        clear: both; */
 }
 
 .data-view.metadata > h4 {
@@ -198,16 +222,21 @@ body {
 
 .record {
     margin: 1em 0;
-/*    border-top: 1px solid #A8A7A3;*/
+    /*    border-top: 1px solid #A8A7A3;*/
 }
 
 #main h2 ~ #query-input {                
     display: block;
 }
-    
+
 #query-input,
 .record .header {    
     padding: 0 5px;
+}
+
+#qi,
+#qi > form {
+    height: 100%;
 }
 
 .record .header .links a {
@@ -233,7 +262,7 @@ body {
 /*.data-view.cite {display:none;}*/
 
 #detail .data-view.full, #detail .data-view.facs {
-     width: 48%;
+    width: 48%;
     float:left;
 }
 
@@ -248,9 +277,9 @@ body {
 
 
 /* padding-top: 5em;
-			#impressum {float:left; margin-left: 2%; width:60%; }
-			#detail {float:right; width:36%; display:none; }
-			#detail-front {float:right; width:35%; margin-top:7em; margin-left:3%;}
+                        #impressum {float:left; margin-left: 2%; width:60%; }
+                        #detail {float:right; width:36%; display:none; }
+                        #detail-front {float:right; width:35%; margin-top:7em; margin-left:3%;}
 */
 /* customize jquery-ui*/
 .ui-widget{
@@ -276,90 +305,351 @@ body {
 .cmd_close {float:right;}
 
 @media print {
-/*	ul { list-style-type: disc;	} */	
-	button {display:none;}
+    /*	ul { list-style-type: disc;	} */	
+    button {display:none;}
     .select-layout {display:none}
 }
 
 /*
  * .ui-accordion .ui-accordion-header { 	padding-left: 12px; }
 .ui-accordion .ui-accordion-header .ui-icon {	left: -0.2em; }
-	
+        
 .ui-widget {font-size: 1em; font-family: inherit;}
-	.ui-tabs .ui-tabs-panel { padding:1em;}
-	.ui-tabs .ui-tabs-nav li a, .result-header {padding: 0.2em 0.5em; }
-	.ui-accordion .ui-accordion-header a {padding: 0.1em 0.3em;}
+        .ui-tabs .ui-tabs-panel { padding:1em;}
+        .ui-tabs .ui-tabs-nav li a, .result-header {padding: 0.2em 0.5em; }
+        .ui-accordion .ui-accordion-header a {padding: 0.1em 0.3em;}
     .ui-datepicker {width: auto;}  
     .ui-datepicker table {width: 100%;}
     .ui-datepicker select.ui-datepicker-month, .ui-datepicker select.ui-datepicker-year {    width: auto; }*/
 
 /* basic positioning of the main blocks on the screen */
 @media all and (min-width: 1200px) {
+    /*disable column show/hide*/
+    #main-show, #main-hidden, #main-showing,
+    #navigation-show, #navigation-hidden, #navigation-showing,
+    #main-show:checked ~ #main-showing,
+    #navigation-show:checked ~ #navigation-showing
+    {
+        display: none;
+    }
+    #main-hidden ~ *,            
+    #navigation-hidden ~ * {                
+        display: block;
+    }  
+}
+
+@media all and (min-width: 800px) {
     .content-part {        
         height: 100%;
     }
     #navigation, #main {
         padding-right: 0.8em;
-    }   
+    }
+    
+    #navigation-showing,
+    #navigation-hidden,
+    #main-showing,
+    #main-hidden {
+        right: 1em;
+    }
+
     #main {
         float: left;
         width: 24%;
     }
-    #results {
-    }
-    
+
     #navigation {
         float: left;
         width: 24%;
     }
-    
+
     #detail { 
         margin-left: 48%;   
         width: 52%; 
     }
-    
+
     #detail > h2,
     #main > h2,
     #navigation > h2 {
         height: 5%;
     }
-    
+
     #navigation-content,
     #detail-content {
         height: 95%;
     }
-    
+
     #query-input {
-        height: 8%;
+        height: 7%;
     }
-    
+
     #results {
-        height: 87%;
+        height: 88%;
         overflow-y: hidden;
     }
-    
+
     .result-header {
-        margin-top: -10px;
         height: 20%;
     }
     .result-body {
-        height: 80%;
+        height: 83%; /* ?! */
+    }
+    
+    .result-header,
+    .result-body {
+    /* Where the heck does this whitespace between #result and it's contents come from? */
+        margin-top: -0.9em;
     }
 }
 
-@media all and (max-width: 1199px) {
+@media all and (min-width: 800px) and (max-width: 1199px) {
+    #main {
+        clear: left;
+    }
+    #detail { 
+        margin-left: 33%;   
+        width: 66%;
+    }
+    
+    #navigation, #main {
+        width: 33%;
+        float: left;
+    }
+    
+    #navigation {
+        height: 40%;
+    }
+    #main {        
+        height: 60%;
+    }
+
+    #query-input {
+        height: 14%;
+    }
+    #results {
+        height: 78%;
+        overflow-y: hidden;
+    }
+    .result-header {
+        height: 43%;
+        overflow-y: hidden;
+    }
+    .result-body {
+        height: 63%;
+    }
+
+    #main > h2 {
+        height: 8%;        
+    }
+    
+    #navigation > h2 {
+        height: 12%;
+    }
+
+    #navigation-content {
+        height: 89%;
+    }
+}
+
+@media all and (max-width: 799px) {
     #navigation, #main {
         float:none;
     }
     #navigation {
         margin-bottom: 0.5em;
     }
-    
+
     #main {
         margin-bottom: 0.5em;
     }
-    
+
     #detail {
         display: block;
     }
+}
+
+/* like < 800 px */
+
+#col-layout-1c:checked ~ #content-container #navigation, 
+#col-layout-1c:checked ~ #content-container #main,
+#col-layout-1c:checked ~ #content-container #detail {
+    float:none;
+    width: 100%;
+    margin: 0 0 0 0;
+    padding: 0 0 0 0;
+}
+#col-layout-1c:checked ~ #content-container #navigation {
+    margin-bottom: 0.5em;
+}
+
+#col-layout-1c:checked ~ #content-container #main {
+    margin-bottom: 0.5em;
+}
+
+#col-layout-1c:checked ~ #content-container #detail {
+    display: block;
+}
+
+/* resetter */
+#col-layout-1c:checked ~ #content-container .content-part,
+#col-layout-1c:checked ~ #content-container #navigation-content,
+#col-layout-1c:checked ~ #content-container #detail-content,
+#col-layout-1c:checked ~ #content-container #main > h2,
+#col-layout-1c:checked ~ #content-container #navigation > h2,
+#col-layout-1c:checked ~ #content-container #detail > h2 {
+    height: auto;
+}
+
+#col-layout-1c:checked ~ #content-container .result-header,
+#col-layout-1c:checked ~ #content-container .result-body {
+    /* Where the heck does this whitespace between #result and it's contents come from? */
+    margin-top: auto;
+}
+
+
+/*force column show/hide*/
+#col-layout-1c:checked ~ #content-container #main-show,
+#col-layout-1c:checked ~ #content-container #main-hidden,
+#col-layout-1c:checked ~ #content-container #navigation-show,
+#col-layout-1c:checked ~ #content-container #navigation-hidden,
+#col-layout-1c:checked ~ #content-container #main-show:checked ~ #main-showing,
+#col-layout-1c:checked ~ #content-container #navigation-show:checked ~ #navigation-showing{
+    display: block;
+    z-index: 0;
+}
+
+#col-layout-1c:checked ~ #content-container #main-show:checked ~ #main-showing,
+#col-layout-1c:checked ~ #content-container #navigation-show:checked ~ #navigation-showing {
+    z-index: 1;
+}
+
+#col-layout-1c:checked ~ #content-container #main-hidden ~ *,
+#col-layout-1c:checked ~ #content-container #main-showing,            
+#col-layout-1c:checked ~ #content-container #navigation-hidden ~ *,
+#col-layout-1c:checked ~ #content-container #navigation-showing {                
+    display: none;
+}
+
+
+#col-layout-1c:checked ~ #content-container #main-show:checked ~ #main-hidden ~ *,
+#col-layout-1c:checked ~ #content-container #navigation-show:checked ~ #navigation-hidden ~ * {
+    display: block;
+}
+
+/* like < 1200 px */
+#col-layout-2c:checked ~  #content-container   #main {
+    clear: left;
+}
+#col-layout-2c:checked ~  #content-container   #detail { 
+    margin-left: 33%;   
+    width: 66%; 
+}
+#col-layout-2c:checked ~ #content-container #navigation,
+#col-layout-2c:checked ~ #content-container #main {
+    width: 33%;
+    float: left;
+}
+
+#col-layout-2c:checked ~ #content-container #navigation-showing,
+#col-layout-2c:checked ~ #content-container #navigation-hidden
+#col-layout-2c:checked ~ #content-container #main-showing,
+#col-layout-2c:checked ~ #content-container #nain-hidden {
+    right: 1em;
+}
+
+#col-layout-2c:checked ~ #content-container #main {
+    height: 60%;
+}
+
+#col-layout-2c:checked ~ #content-container #navigation {
+    height: 40%;
+}
+
+#col-layout-2c:checked ~  #content-container   #query-input {
+    height: 14%;
+}
+#col-layout-2c:checked ~   #content-container  #results {
+    height: 78%;
+    overflow-y: hidden;
+}
+#col-layout-2c:checked ~   #content-container  .result-header {
+    height: 43%;
+}
+#col-layout-2c:checked ~   #content-container  .result-body {
+    height: 63%;
+}
+
+#col-layout-2c:checked ~ #content-container   #main > h2 {
+    height: 8%;
+}
+#col-layout-2c:checked ~ #content-container   #navigation > h2 {
+    height: 12%;
+}
+
+#col-layout-2c:checked ~ #content-container  #navigation-content {
+    height: 89%;
+}
+
+#col-layout-2c:checked ~ #content-container #detail-content {
+    height: 95%;
+}
+
+/* like >= 1200 px */
+#col-layout-3c:checked ~ #content-container .content-part {        
+    height: 100%;
+}
+#col-layout-3c:checked ~ #content-container #navigation,
+#col-layout-3c:checked ~ #content-container #main {
+    padding-right: 0.8em;
+}
+
+#col-layout-3c:checked ~ #content-container #main {
+    float: left;
+    width: 24%;
+}
+
+#col-layout-3c:checked ~ #content-container #navigation {
+    float: left;
+    width: 24%;
+}
+
+#col-layout-3c:checked ~ #content-container #detail { 
+    margin-left: 48%;   
+    width: 52%; 
+}
+
+#col-layout-3c:checked ~ #content-container #detail > h2,
+#col-layout-3c:checked ~ #content-container #main > h2,
+#col-layout-3c:checked ~ #content-container #navigation > h2 {
+    height: 5%;
+}
+
+#col-layout-3c:checked ~ #content-container  #navigation-content,
+#col-layout-3c:checked ~ #content-container  #detail-content {
+    height: 95%;
+}
+
+#col-layout-3c:checked ~ #content-container #query-input {
+    height: 7%;
+    overflow-y: hidden;
+}
+
+#col-layout-3c:checked ~ #content-container #results {
+    height: 88%;
+    overflow-y: hidden;
+}
+
+#col-layout-3c:checked ~ #content-container .result-header {
+    margin-top: -10px;
+    height: 21%;
+    overflow-y: hidden;
+}
+#col-layout-3c:checked ~ #content-container .result-body {
+    height: 83%;
+}
+
+/* resetter */
+
+#col-layout-3c:checked ~ #content-container #main {
+    clear: none;
 }
