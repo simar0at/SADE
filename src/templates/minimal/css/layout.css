@@ -88,6 +88,7 @@ body {
 #header {
     margin-bottom: 1em;
     min-height:90px;
+    z-index: 2;
 }
 #site-name{
     display:inline;
@@ -106,18 +107,23 @@ body {
 #menu{
     /*    display:inline;*/
 }
+
 #top-menu{
-    display:inline;
+    display:inline-block;
     position:absolute;
-    top:50px;
+    z-index: 100;
 }
+
 #top-menu li{
-    display:inline;
-    padding:0 1em;
+    display:inline-block;
     background:none;
 }
 
 #user {float:right;}
+
+#content-container {
+    z-index: 0;
+}
 
 /*#persistent-link-wrapper {position: absolute; right: 1.2em; top:65px;}  */
 
