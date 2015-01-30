@@ -254,7 +254,7 @@ body {
 
 .result-navigation {float:right;}
 
-/*.result-body, .detail-content {overflow: auto; height:90%;}*/
+/*.result-body,  {overflow: auto; height:90%;}*/
 
 
 
@@ -263,7 +263,11 @@ body {
 /* detail */
 
 
-#detail .navigation {float:right;}
+#detail .navigation {
+  position: absolute;
+  right: 0;
+  top: 7%;
+}
 
 /*.data-view.cite {display:none;}*/
 
@@ -281,6 +285,18 @@ body {
     width: 100%;    
 }
 
+#detail .detail-header {
+    /* There is some myterious space above here again.*/
+    height: 4%;
+}
+
+#detail .context-detail {
+    height: 9%;
+    overflow-y: auto;
+}
+#detail .detail-content-outer {
+    height: 80%;
+}
 
 /* padding-top: 5em;
                         #impressum {float:left; margin-left: 2%; width:60%; }
@@ -369,7 +385,7 @@ body {
         width: 24%;
     }
 
-    #detail { 
+    #detail.content-part { 
         margin-left: 48%;   
         width: 52%; 
     }
@@ -380,8 +396,7 @@ body {
         height: 5%;
     }
 
-    #navigation-content,
-    #detail-content {
+    #navigation-content {
         height: 95%;
     }
 
@@ -396,23 +411,19 @@ body {
 
     .result-header {
         height: 20%;
+        overflow-y: auto;
     }
     .result-body {
         height: 83%; /* ?! */
     }
     
-    .result-header,
-    .result-body {
-    /* Where the heck does this whitespace between #result and it's contents come from? */
-        margin-top: -0.9em;
-    }
 }
 
 @media all and (min-width: 800px) and (max-width: 1199px) {
     #main {
         clear: left;
     }
-    #detail { 
+    #detail.content-part { 
         margin-left: 33%;   
         width: 66%;
     }
@@ -469,11 +480,22 @@ body {
         margin-bottom: 0.5em;
     }
 
-    #detail {
+    #detail.content-part {
         display: block;
     }
     #query-input {
         height: 2.5em;
+    }
+    #detail .navigation {
+        top: 28px;
+    }
+    
+    #detail .detail-content-outer {
+        height: auto;
+    }
+    
+    .result-body table.show {
+        width: 100%;
     }
 }
 
@@ -481,7 +503,7 @@ body {
 
 #col-layout-1c:checked ~ #content-container #navigation, 
 #col-layout-1c:checked ~ #content-container #main,
-#col-layout-1c:checked ~ #content-container #detail {
+#col-layout-1c:checked ~ #content-container #detail.content-part {
     float:none;
     width: 100%;
     margin: 0 0 0 0;
@@ -495,7 +517,7 @@ body {
     margin-bottom: 0.5em;
 }
 
-#col-layout-1c:checked ~ #content-container #detail {
+#col-layout-1c:checked ~ #content-container #detail.content-part {
     display: block;
 }
 
@@ -507,13 +529,17 @@ body {
 /* resetter */
 #col-layout-1c:checked ~ #content-container .content-part,
 #col-layout-1c:checked ~ #content-container #navigation-content,
-#col-layout-1c:checked ~ #content-container #detail-content,
+#col-layout-1c:checked ~ #content-container #detail,
 #col-layout-1c:checked ~ #content-container #main > h2,
 #col-layout-1c:checked ~ #content-container #navigation > h2,
-#col-layout-1c:checked ~ #content-container #detail > h2,
+#col-layout-1c:checked ~ #content-container #detail.content-part > h2,
 #col-layout-1c:checked ~ #content-container #results,
 #col-layout-1c:checked ~ #content-container .result-header,
-#col-layout-1c:checked ~ #content-container .result-body
+#col-layout-1c:checked ~ #content-container .result-body,
+#col-layout-1c:checked ~ #content-container #detail .detail-header,
+#col-layout-1c:checked ~ #content-container #detail .context-detail,
+#col-layout-1c:checked ~ #content-container #detail .detail-content-outer,
+#col-layout-1c:checked ~ #content-container #detail .detail-content
 {
     height: auto;
 }
@@ -554,11 +580,14 @@ body {
     display: block;
 }
 
+#col-layout-1c:checked ~ #content-container .result-body table.show {
+    width: 100%;
+}
 /* like < 1200 px */
 #col-layout-2c:checked ~  #content-container   #main {
     clear: left;
 }
-#col-layout-2c:checked ~  #content-container   #detail { 
+#col-layout-2c:checked ~  #content-container   #detail.content-part { 
     margin-left: 33%;   
     width: 66%; 
 }
@@ -608,7 +637,7 @@ body {
     height: 89%;
 }
 
-#col-layout-2c:checked ~ #content-container #detail-content {
+#col-layout-2c:checked ~ #content-container #detail.content-part {
     height: 95%;
 }
 
@@ -631,19 +660,19 @@ body {
     width: 24%;
 }
 
-#col-layout-3c:checked ~ #content-container #detail { 
+#col-layout-3c:checked ~ #content-container #detail.content-part { 
     margin-left: 48%;   
     width: 52%; 
 }
 
-#col-layout-3c:checked ~ #content-container #detail > h2,
+#col-layout-3c:checked ~ #content-container #detail.content-part > h2,
 #col-layout-3c:checked ~ #content-container #main > h2,
 #col-layout-3c:checked ~ #content-container #navigation > h2 {
     height: 5%;
 }
 
 #col-layout-3c:checked ~ #content-container  #navigation-content,
-#col-layout-3c:checked ~ #content-container  #detail-content {
+#col-layout-3c:checked ~ #content-container  #detail.content-part {
     height: 95%;
 }
 
