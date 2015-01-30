@@ -448,8 +448,8 @@ body {
         overflow-y: hidden;
     }
     .result-header {
-        height: 43%;
-        overflow-y: hidden;
+        height: 27%;
+        overflow-y: auto;
     }
     .result-body {
         height: 63%;
