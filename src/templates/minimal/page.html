@@ -21,6 +21,8 @@
         <script type="text/javascript" src="modules/shared/scripts/js/jquery/jquery-1.11.2.min.js"/>
         <script type="text/javascript" src="modules/shared/scripts/js/jquery/jquery-migrate-1.2.1.min.js"/>
         <script type="text/javascript" src="modules/shared/scripts/js/jquery/jquery-ui-1.10.4.custom.min.js"/>
+        <script type="text/javascript" src="modules/shared/scripts/js/jquery/jquery.treeview.js"/>
+        <script type="text/javascript" src="modules/shared/scripts/js/jquery/jquery.modern-blink.js"/>
         <script type="text/javascript" src="modules/shared/scripts/js/codemirror/codemirror.js"/>
         <script type="text/javascript" src="modules/shared/scripts/js/codemirror/mode/xml/xml.js"/>                                                      
         <script type="text/javascript" src="modules/shared/scripts/js/URI.js"/>
@@ -38,6 +40,14 @@
         <link class="config:html-head"/>
     </head>
     <body id="body">
+        <input type="radio" id="col-layout-1c" name="layout-switch"/>
+        <label for="col-layout-1c" class="col-layout-label">Show 1 column layout</label>
+        <input type="radio" id="col-layout-2c" name="layout-switch"/>
+        <label for="col-layout-2c" class="col-layout-label">Show 2 columns layout</label>
+        <input type="radio" id="col-layout-3c" name="layout-switch"/>
+        <label for="col-layout-3c" class="col-layout-label">Show 3 columns layout</label>
+        <input type="radio" id="col-layout-auto" name="layout-switch" checked="checked"/>
+        <label for="col-layout-auto" class="col-layout-label">Show layout according to screen width</label>
         <div class="templates:include?path=header.html"/>
         <div id="content-container" class="container-fluid"/>
     </body>

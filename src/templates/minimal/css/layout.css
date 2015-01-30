@@ -472,6 +472,9 @@ body {
     #detail {
         display: block;
     }
+    #query-input {
+        height: 2.5em;
+    }
 }
 
 /* like < 800 px */
@@ -496,13 +499,22 @@ body {
     display: block;
 }
 
+
+#col-layout-1c:checked ~ #content-container #query-input {
+    height: 2.5em;
+}
+
 /* resetter */
 #col-layout-1c:checked ~ #content-container .content-part,
 #col-layout-1c:checked ~ #content-container #navigation-content,
 #col-layout-1c:checked ~ #content-container #detail-content,
 #col-layout-1c:checked ~ #content-container #main > h2,
 #col-layout-1c:checked ~ #content-container #navigation > h2,
-#col-layout-1c:checked ~ #content-container #detail > h2 {
+#col-layout-1c:checked ~ #content-container #detail > h2,
+#col-layout-1c:checked ~ #content-container #results,
+#col-layout-1c:checked ~ #content-container .result-header,
+#col-layout-1c:checked ~ #content-container .result-body
+{
     height: auto;
 }
 
