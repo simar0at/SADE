@@ -3,6 +3,8 @@
 /* wireframe for debugging */
 /*div {border:1px dotted grey; }*/
 
+@import "layout-2c.css";
+
 html {
     width: 100%;
     height: 100%;
@@ -33,10 +35,11 @@ body {
 
 .container-fluid {
     overflow-y: auto;
+    position: relative;
     height: 80%;
-    height: -webkit-calc(100% - 90px - 1em - 1em - 1px);
-    height: -moz-calc(100% - 90px - 1em - 1em - 1px);
-    height: calc(100% - 90px - 1em - 1em - 1px);
+    height: -webkit-calc(100% - 90px - 12px);
+    height: -moz-calc(100% - 90px - 12px);
+    height: calc(100% - 90px  - 12px);
 }
 
 .scrollable-content-box {
@@ -46,48 +49,91 @@ body {
 /* ********************* */
 /* layout switcher (radio buttons) */
 
+#layout-switch-background {
+    position: fixed;
+    z-index: 999;
+    width: 10px;
+    height: 10px;
+}
+
+#layout-switch-labels {
+    position: fixed;
+    background: lightgray;
+    display: block;
+    width: 20em;
+    height: 6.7em;
+    z-index: 999;    
+}
+
+.col-layout-label {
+    display: inline-block;
+    font-size: 12px;
+    color: black;
+    height: 20px;
+    padding: 0 0.4em 0 1.9em;
+}
+
+#layout-switch-background:hover ~ input[type=radio],
+#layout-switch-background:hover ~ #layout-switch-labels,
+#layout-switch-labels:hover {
+    display: block;   
+}
+
 #col-layout-1c,
 #col-layout-2c,
 #col-layout-3c,
 #col-layout-auto,
-#col-layout-1c ~ label,
-#col-layout-2c ~ label,
-#col-layout-3c ~ label,
-#col-layout-auto ~ label {
+#layout-switch-labels
+ {
     position: fixed;
-    font-size: 12px;
-    background-color: lightgray;
-    color: black;
-    display: block;
-    height: 20px;
-    padding: 0 0.3em 0 0.3em;
     z-index: 1000;
-}
-
-#col-layout-2c,
-#col-layout-2c ~ label {
-    top: 22px;
-}
-
-#col-layout-3c,
-#col-layout-3c ~ label {
-    top: 44px;
-}
-
-#col-layout-auto,
-#col-layout-auto ~ label {
-    top: 66px;
+    display: none;
 }
 
 .col-layout-label {
-    left: 20px;
+    padding-left: 1.6em;
 }
+
+#col-layout-2c,
+#label-2c {
+    top: 1.7em;
+}
+
+#col-layout-3c,
+#label-3c {
+    top: 3.3em;
+}
+
+#col-layout-auto,
+#label-auto {
+    top: 4.9em;
+}
+
+#col-layout-1c:checked ~ #layout-switch-labels #label-1c,
+#col-layout-2c:checked ~ #layout-switch-labels #label-2c,
+#col-layout-3c:checked ~ #layout-switch-labels #label-3c,
+#col-layout-auto:checked ~ #layout-switch-labels #label-auto {
+    padding-left: 0;
+}
+
+#col-layout-1c:checked ~ #layout-switch-labels #label-1c:before,
+#col-layout-2c:checked ~ #layout-switch-labels #label-2c:before,
+#col-layout-3c:checked ~ #layout-switch-labels #label-3c:before,
+#col-layout-auto:checked ~ #layout-switch-labels #label-auto:before {
+    content: "\00A0X";
+    display: inline-block;
+    width: 1.5em
+}
+
+/*.col-layout-label {
+    left: 1.6em;
+}*/
 
 /* ********************* */
 /* header */
 #header {
-    margin-bottom: 1em;
-    min-height:90px;
+    margin-bottom: 12px;
+    height:90px;
     z-index: 2;
 }
 #site-name{
@@ -134,39 +180,52 @@ body {
 /*******************/
 /* site part show/hide */
 
-#main-hidden ~ *,            
-#navigation-hidden ~ * {                
+#main > h2 ~ *,            
+#navigation > h2 ~ * {                
     display: none;
 }    
 
-#main-show:checked ~ *,            
-#navigation-show:checked ~ *           
+#main-show:checked ~ #main > *,            
+#navigation-show:checked ~ #navigation > *           
 {                
     display: block;
 }
 
 #main-show, #navigation-show {
     position: absolute;
-    right: 1em;
-    top:0;
     /* hide the check boxes*/
     width: 1px;
     height: 1px;
     opacity: 0;
 }
 
+#main-show {
+    left: 1em;
+    top:5px;
+}
+
+#navigation-show {
+    left: 1em;
+    top: 25px;
+}
+
 #main-showing, #navigation-showing,
 #main-hidden, #navigation-hidden {
     padding: 0.2em;
     position: absolute;
-    right: 0.2em;
-    top: 0;
     display: inline-block;
     -webkit-box-shadow: 0.2em 0.2em 0.1em 0px rgba(50, 50, 50, 1);
     -moz-box-shadow:    0.2em 0.2em 0.1em 0px rgba(50, 50, 50, 1);
     box-shadow:         0.2em 0.2em 0.1em 0px rgba(50, 50, 50, 1);
     text-align: center;
     background: #EEE;
+}
+
+#main-showing, #main-hidden,
+#navigation-showing, #navigation-hidden {
+    display: block;
+    position: absolute;
+    right: 0.3em;
 }
 
 #main-showing:active, #navigation-showing:active,
@@ -184,13 +243,13 @@ body {
     display: inline-block;
 }
 
-#main-show:checked ~ #main-showing,
-#navigation-show:checked ~ #navigation-showing {
+#main-show:checked ~ div #main-showing,
+#navigation-show:checked ~ div #navigation-showing {
     display: inline-block;
 }
 
-#main-show:checked ~ #main-hidden,
-#navigation-show:checked ~ #navigation-hidden {
+#main-show:checked ~ div #main-hidden,
+#navigation-show:checked ~ div #navigation-hidden {
     display: none;
 }
 
@@ -295,7 +354,7 @@ body {
     overflow-y: auto;
 }
 #detail .detail-content-outer {
-    height: 80%;
+    height: 82%;
 }
 
 /* padding-top: 5em;
@@ -347,125 +406,21 @@ body {
 /* basic positioning of the main blocks on the screen */
 @media all and (min-width: 1200px) {
     /*disable column show/hide*/
-    #main-show, #main-hidden, #main-showing,
-    #navigation-show, #navigation-hidden, #navigation-showing,
-    #main-show:checked ~ #main-showing,
-    #navigation-show:checked ~ #navigation-showing
+    #main-show,
+    #main-hidden,
+    #main-showing,
+    #navigation-show,
+    #navigation-hidden,
+    #navigation-showing,
+    #main-show:checked ~ div #main-showing,
+    #navigation-show:checked ~ div #navigation-showing
     {
         display: none;
     }
-    #main-hidden ~ *,            
-    #navigation-hidden ~ * {                
+    #main #results,            
+    #navigation #navigation-content {                
         display: block;
     }  
-}
-
-@media all and (min-width: 800px) {
-    .content-part {        
-        height: 100%;
-    }
-    #navigation, #main {
-        padding-right: 0.8em;
-    }
-    
-    #navigation-showing,
-    #navigation-hidden,
-    #main-showing,
-    #main-hidden {
-        right: 1em;
-    }
-
-    #main {
-        float: left;
-        width: 24%;
-    }
-
-    #navigation {
-        float: left;
-        width: 24%;
-    }
-
-    #detail.content-part { 
-        margin-left: 48%;   
-        width: 52%; 
-    }
-
-    #detail > h2,
-    #main > h2,
-    #navigation > h2 {
-        height: 5%;
-    }
-
-    #navigation-content {
-        height: 95%;
-    }
-
-    #query-input {
-        height: 7%;
-    }
-
-    #results {
-        height: 88%;
-        overflow-y: hidden;
-    }
-
-    .result-header {
-        height: 20%;
-        overflow-y: auto;
-    }
-    .result-body {
-        height: 83%; /* ?! */
-    }
-    
-}
-
-@media all and (min-width: 800px) and (max-width: 1199px) {
-    #main {
-        clear: left;
-    }
-    #detail.content-part { 
-        margin-left: 33%;   
-        width: 66%;
-    }
-    
-    #navigation, #main {
-        width: 33%;
-        float: left;
-    }
-    
-    #navigation {
-        height: 40%;
-    }
-    #main {        
-        height: 60%;
-    }
-
-    #query-input {
-        height: 14%;
-    }
-    #results {
-        height: 78%;
-        overflow-y: hidden;
-    }
-    .result-header {
-        height: 27%;
-        overflow-y: auto;
-    }
-    .result-body {
-        height: 63%;
-    }
-
-    #main > h2 {
-        height: 8%;        
-    }
-    
-    #navigation > h2 {
-        height: 12%;
-    }
-
-    #navigation-content {
-        height: 89%;
-    }
 }
 
 @media all and (max-width: 799px) {
@@ -483,7 +438,7 @@ body {
     #detail.content-part {
         display: block;
     }
-    #query-input {
+    #main h2 ~ #query-input {
         height: 2.5em;
     }
     #detail .navigation {
@@ -531,7 +486,11 @@ body {
 #col-layout-1c:checked ~ #content-container #navigation-content,
 #col-layout-1c:checked ~ #content-container #detail,
 #col-layout-1c:checked ~ #content-container #main > h2,
+#col-layout-1c:checked ~ #content-container #main-showing,
+#col-layout-1c:checked ~ #content-container #main-hidden,
 #col-layout-1c:checked ~ #content-container #navigation > h2,
+#col-layout-1c:checked ~ #content-container #navigation-showing,
+#col-layout-1c:checked ~ #content-container #navigation-hidden,
 #col-layout-1c:checked ~ #content-container #detail.content-part > h2,
 #col-layout-1c:checked ~ #content-container #results,
 #col-layout-1c:checked ~ #content-container .result-header,
@@ -556,15 +515,17 @@ body {
 #col-layout-1c:checked ~ #content-container #main-hidden,
 #col-layout-1c:checked ~ #content-container #navigation-show,
 #col-layout-1c:checked ~ #content-container #navigation-hidden,
-#col-layout-1c:checked ~ #content-container #main-show:checked ~ #main-showing,
-#col-layout-1c:checked ~ #content-container #navigation-show:checked ~ #navigation-showing{
+#col-layout-1c:checked ~ #content-container #main-show:checked ~ div #main-showing,
+#col-layout-1c:checked ~ #content-container #navigation-show:checked ~ div #navigation-showing {
+    top: 0;
     display: block;
-    z-index: 0;
+    z-index: 99;
 }
 
-#col-layout-1c:checked ~ #content-container #main-show:checked ~ #main-showing,
-#col-layout-1c:checked ~ #content-container #navigation-show:checked ~ #navigation-showing {
-    z-index: 1;
+#col-layout-1c:checked ~ #content-container #main-show:checked ~ div #main-hidden,
+#col-layout-1c:checked ~ #content-container #navigation-show:checked ~ div #navigation-hidden {
+    top: 0;
+    display: none;
 }
 
 #col-layout-1c:checked ~ #content-container #main-hidden ~ *,
@@ -583,68 +544,12 @@ body {
 #col-layout-1c:checked ~ #content-container .result-body table.show {
     width: 100%;
 }
-/* like < 1200 px */
-#col-layout-2c:checked ~  #content-container   #main {
-    clear: left;
-}
-#col-layout-2c:checked ~  #content-container   #detail.content-part { 
-    margin-left: 33%;   
-    width: 66%; 
-}
-#col-layout-2c:checked ~ #content-container #navigation,
-#col-layout-2c:checked ~ #content-container #main {
-    width: 33%;
-    float: left;
-}
-
-#col-layout-2c:checked ~ #content-container #navigation-showing,
-#col-layout-2c:checked ~ #content-container #navigation-hidden
-#col-layout-2c:checked ~ #content-container #main-showing,
-#col-layout-2c:checked ~ #content-container #nain-hidden {
-    right: 1em;
-}
-
-#col-layout-2c:checked ~ #content-container #main {
-    height: 60%;
-}
-
-#col-layout-2c:checked ~ #content-container #navigation {
-    height: 40%;
-}
-
-#col-layout-2c:checked ~  #content-container   #query-input {
-    height: 14%;
-}
-#col-layout-2c:checked ~   #content-container  #results {
-    height: 78%;
-    overflow-y: hidden;
-}
-#col-layout-2c:checked ~   #content-container  .result-header {
-    height: 43%;
-}
-#col-layout-2c:checked ~   #content-container  .result-body {
-    height: 63%;
-}
-
-#col-layout-2c:checked ~ #content-container   #main > h2 {
-    height: 8%;
-}
-#col-layout-2c:checked ~ #content-container   #navigation > h2 {
-    height: 12%;
-}
-
-#col-layout-2c:checked ~ #content-container  #navigation-content {
-    height: 89%;
-}
-
-#col-layout-2c:checked ~ #content-container #detail.content-part {
-    height: 95%;
-}
 
 /* like >= 1200 px */
 #col-layout-3c:checked ~ #content-container .content-part {        
     height: 100%;
 }
+
 #col-layout-3c:checked ~ #content-container #navigation,
 #col-layout-3c:checked ~ #content-container #main {
     padding-right: 0.8em;
@@ -667,13 +572,17 @@ body {
 
 #col-layout-3c:checked ~ #content-container #detail.content-part > h2,
 #col-layout-3c:checked ~ #content-container #main > h2,
-#col-layout-3c:checked ~ #content-container #navigation > h2 {
+#col-layout-3c:checked ~ #content-container #navigation > h2,
+#col-layout-3c:checked ~ #content-container #navigation #navigation-hidden,
+#col-layout-3c:checked ~ #content-container #navigation #navigation-showing, 
+#col-layout-3c:checked ~ #content-container #main #main-hidden,
+#col-layout-3c:checked ~ #content-container #main #main-showing{
     height: 5%;
 }
 
-#col-layout-3c:checked ~ #content-container  #navigation-content,
-#col-layout-3c:checked ~ #content-container  #detail.content-part {
+#col-layout-3c:checked ~ #content-container  #navigation-content {
     height: 95%;
+    display: block;
 }
 
 #col-layout-3c:checked ~ #content-container #query-input {
@@ -687,12 +596,11 @@ body {
 }
 
 #col-layout-3c:checked ~ #content-container .result-header {
-    margin-top: -10px;
-    height: 21%;
+    height: 20%;
     overflow-y: hidden;
 }
 #col-layout-3c:checked ~ #content-container .result-body {
-    height: 83%;
+    height: 80%;
 }
 
 /* resetter */
