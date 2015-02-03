@@ -660,3 +660,18 @@ body {
 #col-layout-3c:checked ~ #content-container #navigation > h2 ~ * {
     display: block;
 }
+
+#col-layout-3c:checked ~ #content-container #main-showing,
+#col-layout-3c:checked ~ #content-container #main-hidden,
+#col-layout-3c:checked ~ #content-container #navigation-showing,
+#col-layout-3c:checked ~ #content-container #navigation-hidden,
+#col-layout-3c:checked ~ #content-container #main-show:checked ~ #main #main-showing,
+#col-layout-3c:checked ~ #content-container #main-show:checked ~ #main #main-hidden,
+#col-layout-3c:checked ~ #content-container #main-show:checked ~ #navigation #navigation-showing,
+#col-layout-3c:checked ~ #content-container #main-show:checked ~ #navigation #navigation-hidden,       
+#col-layout-3c:checked ~ #content-container #navigation-show:checked ~ #main #main-showing,
+#col-layout-3c:checked ~ #content-container #navigation-show:checked ~ #main #main-hidden,
+#col-layout-3c:checked ~ #content-container #navigation-show:checked ~ #navigation #navigation-showing,
+#col-layout-3c:checked ~ #content-container #navigation-show:checked ~ #navigation #navigation-hidden {
+    display: none;
+}
