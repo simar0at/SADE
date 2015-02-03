@@ -667,6 +667,11 @@ body {
     height: 80%;
 }
 
+.flexbox #col-layout-3c:checked ~ #content-container .result-header,
+.flexbox #col-layout-3c:checked ~ #content-container .result-body {
+    height: auto;
+}
+
 /* resetter */
 
 #col-layout-3c:checked ~ #content-container #main {
