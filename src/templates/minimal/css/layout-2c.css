@@ -30,27 +30,33 @@
     #main > h2,
     #navigation > h2 {
         height: 5%;
+        height: calc(26px);
     }
 
     #navigation-content {
         height: 95%;
+        height: calc(100% - 26px);
     }
 
     #main h2 ~ #query-input {
         height: 7%;
+        height: calc(2.5em);
     }
 
     #results {
         height: 88%;
+        height: calc(100% - 26px - 2.5em);
         overflow-y: hidden;
     }
 
     .result-header {
         height: 20%;
+        height: calc(7.2em);
         overflow-y: auto;
     }
     .result-body {
         height: 80%;
+        height: calc(100% - 7.2em);
     }
 
 }
@@ -74,14 +80,17 @@
 
     #navigation, #main {
         float: left;
-        width: 5%
+        width: 5%;
+        width: calc(26px);
+        padding-right: 0;
     }
 
     #main-show:checked ~ #main,
     #main-show:checked ~ #navigation,
     #navigation-show:checked ~ #main,
     #navigation-show:checked ~ #navigation {
-        width: 33%; 
+        width: 33%;
+        padding-right: 0.8em;
     }
 
     #navigation {
@@ -149,6 +158,7 @@
 
     #main h2 ~ #query-input {
         height: 7%;
+        height: calc(2.5em);
         display: none;
     }
 
@@ -159,50 +169,61 @@
 
     .result-header {
         height: 27%;
+        height: calc(7.2em);
         overflow-y: auto;
     }
     .result-body {
         height: 73%;
+        height: calc(100% - 7.2em);
     }
 
     #main-show:checked ~ #main {      
         height: 93%;
+        height: calc(100% - 26px - 4px);
     }
 
     #main-show:checked ~ #navigation {
         height: 7%;
+        height: calc(26px + 4px);
     }
 
     #main-show:checked ~ #main > h2,
     #main-show:checked ~ #main #main-showing,
     #main-show:checked ~ #main #main-hidden {
-        height: 5.37%;        
+        height: 5.37%;
+        height: calc(26px);
     }
 
     #main-show:checked ~ #navigation > h2,
     #main-show:checked ~ #navigation #navigation-showing,
     #main-show:checked ~ #navigation #navigation-hidden {
         height: 71.4%;
+        height: calc(26px);
     }
 
     #navigation-show:checked ~ #main {
         height: 14%;
+        height: calc(2.5em + 26px);
     }
 
     #navigation-show:checked ~ #navigation {
         height: 86%;
+        height: calc(100% - 2.5em - 26px - 4px);
+        padding-bottom: 4px;
     }
 
     #navigation-show:checked ~ #main > h2,
     #navigation-show:checked ~ #main #main-showing,
     #navigation-show:checked ~ #main #main-hidden {
-        height: 35.7%;        
+        height: 35.7%;
+        height: calc(26px);
     }
 
     #navigation-show:checked ~ #navigation > h2,
     #navigation-show:checked ~ #navigation #navigation-showing,
     #navigation-show:checked ~ #navigation #navigation-hidden {
         height: 6.02%;
+        height: calc(26px);
     }
 
     #navigation-show:checked ~ #main-show:checked ~ #main {       
@@ -216,25 +237,30 @@
     #navigation-show:checked ~ #main-show:checked ~ #main > h2,
     #navigation-show:checked ~ #main-show:checked ~ #main #main-showing,
     #navigation-show:checked ~ #main-show:checked ~ #main #main-hidden {
-        height: 8%;        
+        height: 8%;
+        height: calc(26px);
     }
 
     #navigation-show:checked ~ #main-show:checked ~ #navigation > h2,
     #navigation-show:checked ~ #main-show:checked ~ #navigation #navigation-showing,
     #navigation-show:checked ~ #main-show:checked ~ #navigation #navigation-hidden {
         height: 12%;
+        height: calc(26px);
     }
 
     #navigation-show:checked ~ #main-show:checked ~ #navigation #navigation-content {
         height: 88%;
+        height: calc(100% - 26px);
     }
 
     #navigation-show:checked ~ #main-show:checked ~ #main #query-input {
         height: 11%;
+        height: calc(2.5em);
     }
 
     #navigation-show:checked ~ #main-show:checked ~ #main #results {
         height: 81%;
+        height: calc(100% - 2.5em - 26px);
     }
 }
 
@@ -244,8 +270,10 @@
     clear: left;
 }
 #col-layout-2c:checked ~  #content-container  #detail.content-part { 
-    margin-left: 5%;   
+    margin-left: 5%;
+    margin-left: calc(26px + 0.8em);
     width: 95%;
+    width: calc(100% - 26px - 0.8em);
     /*Why ... ?*/
     height: 99%;
 }
@@ -259,6 +287,8 @@
 #col-layout-2c:checked ~ #content-container #navigation,
 #col-layout-2c:checked ~ #content-container #main {
     width: 5%;
+    width: calc(26px);
+    padding-right: 0;
     float: left;
 }
 
@@ -266,7 +296,8 @@
 #col-layout-2c:checked ~ #content-container  #main-show:checked ~ #navigation,
 #col-layout-2c:checked ~ #content-container  #navigation-show:checked ~ #main,
 #col-layout-2c:checked ~ #content-container  #navigation-show:checked ~ #navigation {
-    width: 33%; 
+    width: 33%;
+    padding-right: 0.8em;
 }
 
 #col-layout-2c:checked ~ #content-container #navigation-showing,
@@ -336,16 +367,20 @@
 
 #col-layout-2c:checked ~  #content-container   #query-input {
     height: 14%;
+    height: calc(2.5em);
 }
 #col-layout-2c:checked ~   #content-container  #results {
     height: 78%;
+    height: calc(100% - 26px - 2.5em);
     overflow-y: hidden;
 }
 #col-layout-2c:checked ~   #content-container  .result-header {
     height: 27%;
+    height: calc(7.2em);
 }
 #col-layout-2c:checked ~   #content-container  .result-body {
     height: 73%;
+    height: calc(100% - 7.2em);
 }
 
 #col-layout-2c:checked ~ #content-container #main > h2,
@@ -355,6 +390,7 @@
 
 #col-layout-2c:checked ~ #content-container  #navigation-content {
     height: 93.98%;
+    height: calc(100% - 26px);
 }
 
 #col-layout-2c:checked ~ #content-container #main-showing,
@@ -377,52 +413,63 @@
     display: none;
 }
 
-#col-layout-2c:checked ~ #content-container     #main-show:checked ~ #main {      
-    height: 93%;        
+#col-layout-2c:checked ~ #content-container #main-show:checked ~ #main {      
+    height: 93%;
+    height: calc(100% - 26px - 4px);        
 }
 
-#col-layout-2c:checked ~ #content-container     #main-show:checked ~ #navigation {
+#col-layout-2c:checked ~ #content-container #main-show:checked ~ #navigation {
     height: 7%;
+    height: calc(26px + 4px);
 }
 
 #col-layout-2c:checked ~ #content-container #main-show:checked ~ #main > h2,
 #col-layout-2c:checked ~ #content-container #main-show:checked ~ #main #main-showing,
 #col-layout-2c:checked ~ #content-container #main-show:checked ~ #main #main-hidden {
-    height: 5.37%;        
+    height: 5.37%;
+    height: calc(26px);
 }
 
 #col-layout-2c:checked ~ #content-container #main-show:checked ~ #main #query-input {
     height: 7%;
+    height: calc(2.5em);
 }
 
 #col-layout-2c:checked ~ #content-container #main-show:checked ~ #main #results {
     height: 87.73%;
+    height: calc(100% - 2.5em - 26px);
 }
 
-#col-layout-2c:checked ~ #content-container     #main-show:checked ~ #navigation > h2,
-#col-layout-2c:checked ~ #content-container     #main-show:checked ~ #navigation #navigation-showing,
-#col-layout-2c:checked ~ #content-container     #main-show:checked ~ #navigation #navigation-hidden {
+#col-layout-2c:checked ~ #content-container #main-show:checked ~ #navigation > h2,
+#col-layout-2c:checked ~ #content-container #main-show:checked ~ #navigation #navigation-showing,
+#col-layout-2c:checked ~ #content-container #main-show:checked ~ #navigation #navigation-hidden {
     height: 71.4%;
+    height: calc(26px);
 }
 
-#col-layout-2c:checked ~ #content-container     #navigation-show:checked ~ #main {
+#col-layout-2c:checked ~ #content-container #navigation-show:checked ~ #main {
     height: 14%;
+    height: calc(2.5em + 26px);
 }
 
-#col-layout-2c:checked ~ #content-container     #navigation-show:checked ~ #navigation {
+#col-layout-2c:checked ~ #content-container #navigation-show:checked ~ #navigation {
     height: 86%;
+    height: calc(100% - 2.5em - 26px - 4px);
+    padding-bottom: 4px;
 }
 
-#col-layout-2c:checked ~ #content-container     #navigation-show:checked ~ #main > h2,
-#col-layout-2c:checked ~ #content-container     #navigation-show:checked ~ #main #main-showing,
-#col-layout-2c:checked ~ #content-container     #navigation-show:checked ~ #main #main-hidden {
-    height: 35.7%;        
+#col-layout-2c:checked ~ #content-container #navigation-show:checked ~ #main > h2,
+#col-layout-2c:checked ~ #content-container #navigation-show:checked ~ #main #main-showing,
+#col-layout-2c:checked ~ #content-container #navigation-show:checked ~ #main #main-hidden {
+    height: 35.7%;
+    height: calc(26px);
 }
 
 #col-layout-2c:checked ~ #content-container     #navigation-show:checked ~ #navigation > h2,
 #col-layout-2c:checked ~ #content-container     #navigation-show:checked ~ #navigation #navigation-showing,
 #col-layout-2c:checked ~ #content-container     #navigation-show:checked ~ #navigation #navigation-hidden {
     height: 6.02%;
+    height: calc(26px);
 }
 
 #col-layout-2c:checked ~ #content-container     #navigation-show:checked ~ #main-show:checked ~ #main {       
@@ -436,25 +483,30 @@
 #col-layout-2c:checked ~ #content-container     #navigation-show:checked ~ #main-show:checked ~ #main > h2,
 #col-layout-2c:checked ~ #content-container     #navigation-show:checked ~ #main-show:checked ~ #main #main-showing,
 #col-layout-2c:checked ~ #content-container     #navigation-show:checked ~ #main-show:checked ~ #main #main-hidden {
-    height: 8%;        
+    height: 8%;
+    height: calc(26px);
 }
 
 #col-layout-2c:checked ~ #content-container #navigation-show:checked ~ #main-show:checked ~ #navigation > h2,
 #col-layout-2c:checked ~ #content-container #navigation-show:checked ~ #main-show:checked ~ #navigation #navigation-showing,
 #col-layout-2c:checked ~ #content-container #navigation-show:checked ~ #main-show:checked ~ #navigation #navigation-hidden {
     height: 12%;
+    height: calc(26px);
 }
 
 #col-layout-2c:checked ~ #content-container #navigation-show:checked ~ #main-show:checked ~ #navigation #navigation-content {
     height: 88%;
+    height: calc(100% - 26px);
 }
 
 #col-layout-2c:checked ~ #content-container #navigation-show:checked ~ #main-show:checked ~ #main #query-input {
     height: 11%;
+    height: calc(2.5em);
 }
 
 #col-layout-2c:checked ~ #content-container #navigation-show:checked ~ #main-show:checked ~ #main #results {
     height: 81%;
+    height: calc(100% - 2.5em - 26px);
 }
 
 #col-layout-2c:checked ~ #content-container #main-show:checked ~ #main #results,

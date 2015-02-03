@@ -372,14 +372,17 @@ body {
 #detail .detail-header {
     /* There is some myterious space above here again.*/
     height: 4%;
+    height: calc(1.5em);
 }
 
 #detail .context-detail {
     height: 9%;
+    height: calc(4em);
     overflow-y: auto;
 }
 #detail .detail-content-outer {
     height: 82%;
+    height: calc(100% - 1.5em - 4em - 26px);
 }
 
 /* padding-top: 5em;
@@ -589,14 +592,22 @@ body {
     padding-right: 0.8em;
 }
 
-#col-layout-3c:checked ~ #content-container #main {
+#col-layout-3c:checked ~ #content-container #main,
+#col-layout-3c:checked ~ #content-container #navigation-show:checked ~ #main,
+#col-layout-3c:checked ~ #content-container #main-show:checked ~ #main,
+#col-layout-3c:checked ~ #content-container #navigation-show:checked ~ #main-show:checked ~ #main  {
     float: left;
     width: 24%;
+    height: 100%;
 }
 
-#col-layout-3c:checked ~ #content-container #navigation {
+#col-layout-3c:checked ~ #content-container #navigation,
+#col-layout-3c:checked ~ #content-container #navigation-show:checked ~ #navigation,
+#col-layout-3c:checked ~ #content-container #main-show:checked ~ #navigation,
+#col-layout-3c:checked ~ #content-container #navigation-show:checked ~ #main-show:checked ~ #navigation {
     float: left;
     width: 24%;
+    height: 100%;
 }
 
 #col-layout-3c:checked ~ #content-container #detail.content-part { 
@@ -612,6 +623,7 @@ body {
 #col-layout-3c:checked ~ #content-container #main #main-hidden,
 #col-layout-3c:checked ~ #content-container #main #main-showing{
     height: 5%;
+    height: calc(26px);
 }
 
 #col-layout-3c:checked ~ #content-container  #navigation-content {
@@ -621,6 +633,7 @@ body {
 
 #col-layout-3c:checked ~ #content-container #query-input {
     height: 7%;
+    height: calc(2.5em);
     overflow-y: hidden;
 }
 
@@ -637,8 +650,21 @@ body {
     height: 80%;
 }
 
+#col-layout-3c:checked ~ #content-container #main > h2:before {
+    content:"";
+}
+
+#col-layout-3c:checked ~ #content-container #navigation > h2:before {
+    content:"";
+}
+
 /* resetter */
 
 #col-layout-3c:checked ~ #content-container #main {
     clear: none;
+}
+
+#col-layout-3c:checked ~  #content-container #main > h2 > img,
+#col-layout-3c:checked ~  #content-container #navigation > h2 > img{
+    display: inline-block;
 }
