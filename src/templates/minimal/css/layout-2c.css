@@ -68,8 +68,8 @@
     }
 
     #detail.content-part { 
-        margin-left: 5%;   
-        width: 95%;
+        margin-left: 33%;   
+        width: 66%;
     }
 
     #main-show:checked ~ #detail.content-part,
@@ -153,16 +153,12 @@
         height: calc(26px + 4px);
     }
 
-    #main-show:checked ~ #main > h2,
-    #main-show:checked ~ #main #main-showing,
-    #main-show:checked ~ #main #main-hidden {
+    #main-show:checked ~ #main > h2 {
         height: 5.37%;
         height: calc(26px);
     }
 
-    #main-show:checked ~ #navigation > h2,
-    #main-show:checked ~ #navigation #navigation-showing,
-    #main-show:checked ~ #navigation #navigation-hidden {
+    #main-show:checked ~ #navigation > h2 {
         height: 71.4%;
         height: calc(26px);
     }
@@ -178,16 +174,12 @@
         padding-bottom: 4px;
     }
 
-    #navigation-show:checked ~ #main > h2,
-    #navigation-show:checked ~ #main #main-showing,
-    #navigation-show:checked ~ #main #main-hidden {
+    #navigation-show:checked ~ #main > h2 {
         height: 35.7%;
         height: calc(26px);
     }
 
-    #navigation-show:checked ~ #navigation > h2,
-    #navigation-show:checked ~ #navigation #navigation-showing,
-    #navigation-show:checked ~ #navigation #navigation-hidden {
+    #navigation-show:checked ~ #navigation > h2 {
         height: 6.02%;
         height: calc(26px);
     }
@@ -200,16 +192,12 @@
         height: 40%;        
     }
 
-    #navigation-show:checked ~ #main-show:checked ~ #main > h2,
-    #navigation-show:checked ~ #main-show:checked ~ #main #main-showing,
-    #navigation-show:checked ~ #main-show:checked ~ #main #main-hidden {
+    #navigation-show:checked ~ #main-show:checked ~ #main > h2 {
         height: 8%;
         height: calc(26px);
     }
 
-    #navigation-show:checked ~ #main-show:checked ~ #navigation > h2,
-    #navigation-show:checked ~ #main-show:checked ~ #navigation #navigation-showing,
-    #navigation-show:checked ~ #main-show:checked ~ #navigation #navigation-hidden {
+    #navigation-show:checked ~ #main-show:checked ~ #navigation > h2 {
         height: 12%;
         height: calc(26px);
     }
@@ -264,7 +252,7 @@
 #col-layout-2c:checked ~ #content-container #navigation-hidden
 #col-layout-2c:checked ~ #content-container #main-showing,
 #col-layout-2c:checked ~ #content-container #main-hidden {
-    right: 0.3em;
+    right: 1em;
 }
 
 #col-layout-2c:checked ~ #content-container #main {
@@ -353,9 +341,7 @@
     height: calc(26px + 4px);
 }
 
-#col-layout-2c:checked ~ #content-container #main-show:checked ~ #main > h2,
-#col-layout-2c:checked ~ #content-container #main-show:checked ~ #main #main-showing,
-#col-layout-2c:checked ~ #content-container #main-show:checked ~ #main #main-hidden {
+#col-layout-2c:checked ~ #content-container #main-show:checked ~ #main > h2 {
     height: 5.37%;
     height: calc(26px);
 }
@@ -370,9 +356,7 @@
     height: calc(100% - 2.5em - 26px);
 }
 
-#col-layout-2c:checked ~ #content-container #main-show:checked ~ #navigation > h2,
-#col-layout-2c:checked ~ #content-container #main-show:checked ~ #navigation #navigation-showing,
-#col-layout-2c:checked ~ #content-container #main-show:checked ~ #navigation #navigation-hidden {
+#col-layout-2c:checked ~ #content-container #main-show:checked ~ #navigation > h2 {
     height: 71.4%;
     height: calc(26px);
 }
@@ -388,16 +372,12 @@
     padding-bottom: 4px;
 }
 
-#col-layout-2c:checked ~ #content-container #navigation-show:checked ~ #main > h2,
-#col-layout-2c:checked ~ #content-container #navigation-show:checked ~ #main #main-showing,
-#col-layout-2c:checked ~ #content-container #navigation-show:checked ~ #main #main-hidden {
+#col-layout-2c:checked ~ #content-container #navigation-show:checked ~ #main > h2 {
     height: 35.7%;
     height: calc(26px);
 }
 
-#col-layout-2c:checked ~ #content-container     #navigation-show:checked ~ #navigation > h2,
-#col-layout-2c:checked ~ #content-container     #navigation-show:checked ~ #navigation #navigation-showing,
-#col-layout-2c:checked ~ #content-container     #navigation-show:checked ~ #navigation #navigation-hidden {
+#col-layout-2c:checked ~ #content-container     #navigation-show:checked ~ #navigation > h2 {
     height: 6.02%;
     height: calc(26px);
 }
@@ -410,16 +390,12 @@
     height: 40%;        
 }
 
-#col-layout-2c:checked ~ #content-container     #navigation-show:checked ~ #main-show:checked ~ #main > h2,
-#col-layout-2c:checked ~ #content-container     #navigation-show:checked ~ #main-show:checked ~ #main #main-showing,
-#col-layout-2c:checked ~ #content-container     #navigation-show:checked ~ #main-show:checked ~ #main #main-hidden {
+#col-layout-2c:checked ~ #content-container     #navigation-show:checked ~ #main-show:checked ~ #main > h2 {
     height: 8%;
     height: calc(26px);
 }
 
-#col-layout-2c:checked ~ #content-container #navigation-show:checked ~ #main-show:checked ~ #navigation > h2,
-#col-layout-2c:checked ~ #content-container #navigation-show:checked ~ #main-show:checked ~ #navigation #navigation-showing,
-#col-layout-2c:checked ~ #content-container #navigation-show:checked ~ #main-show:checked ~ #navigation #navigation-hidden {
+#col-layout-2c:checked ~ #content-container #navigation-show:checked ~ #main-show:checked ~ #navigation > h2 {
     height: 12%;
     height: calc(26px);
 }

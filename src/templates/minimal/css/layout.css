@@ -3,6 +3,7 @@
 /* wireframe for debugging */
 /*div {border:1px dotted grey; }*/
 
+@import "font-awesome.min.css";
 @import "layout-2c.css";
 
 html {
@@ -196,6 +197,30 @@ body {
     display: block;
 }
 
+.flexbox #main-show:checked ~ #main > #results {
+    display: -webkit-box;      /* OLD - iOS 6-, Safari 3.1-6 */
+    display: -moz-box;         /* OLD - Firefox 19- (buggy but mostly works) */
+    display: -ms-flexbox;      /* TWEENER - IE 10 */
+    display: -webkit-flex;     /* NEW - Chrome */
+    display: flex;
+    -webkit-flex-direction: column;
+    -ms-flex-direction: column;
+    flex-flow: column nowrap;
+}
+
+.flexbox .result-header {
+    order: 1;
+    height: auto;
+    -webkit-flex: 0 0 auto;
+    flex: 0 0 auto;
+}
+
+.flexbox .result-body {
+    order: 1;
+    -webkit-flex: 1 1 auto;
+    flex: 1 1 auto;
+}
+
 #main-show, #navigation-show {
     position: absolute;
     /* hide the check boxes*/
@@ -236,28 +261,19 @@ body {
 
 #main-showing, #navigation-showing,
 #main-hidden, #navigation-hidden {
-    padding: 0.2em;
+    width: 16px;
+    height: 16px;
+    padding-right: 0.8em;
     position: absolute;
     display: inline-block;
-    -webkit-box-shadow: 0.2em 0.2em 0.1em 0px rgba(50, 50, 50, 1);
-    -moz-box-shadow:    0.2em 0.2em 0.1em 0px rgba(50, 50, 50, 1);
-    box-shadow:         0.2em 0.2em 0.1em 0px rgba(50, 50, 50, 1);
     text-align: center;
-    background: #EEE;
 }
 
 #main-showing, #main-hidden,
 #navigation-showing, #navigation-hidden {
     display: block;
     position: absolute;
-    right: 0.3em;
-}
-
-#main-showing:active, #navigation-showing:active,
-#main-hidden:active, #navigation-hidden:active {
-    -webkit-box-shadow: 0 0 0 0px rgba(50, 50, 50, 1);
-    -moz-box-shadow:    0 0 0 0px rgba(50, 50, 50, 1);
-    box-shadow:         0 0 0 0px rgba(50, 50, 50, 1);    
+    right: 1em;
 }
 
 #main-showing, #navigation-showing {    
@@ -351,6 +367,7 @@ body {
   position: absolute;
   right: 0;
   top: 7%;
+  top: calc(26px);
 }
 
 /*.data-view.cite {display:none;}*/
