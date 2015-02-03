@@ -33,6 +33,11 @@ body {
     position: relative;
 }
 
+#detail.content-part {    
+    /* where is that 1% used ?!*/
+    height: 99%;
+}
+
 .container-fluid {
     overflow-y: auto;
     position: relative;
@@ -194,20 +199,40 @@ body {
 #main-show, #navigation-show {
     position: absolute;
     /* hide the check boxes*/
+    opacity: 0;
     width: 1px;
     height: 1px;
-    opacity: 0;
+    display: block;
+}
+
+
+/** enable this block to see the checkboxes that actually switch the layout */
+/*
+#main-show, #navigation-show {
+    left: 5em;
+    width: 10em;
+    height: 26px;
+    opacity: 1;
+    z-index: 999;    
 }
 
 #main-show {
-    left: 1em;
-    top:5px;
+    top:20px;
 }
 
 #navigation-show {
-    left: 1em;
-    top: 25px;
+    top: 40px;
 }
+
+#main-show:after {
+    content: "show main";
+    padding-left: 1.5em;
+}
+
+#navigation-show:after {
+    content: "show navigation";
+    padding-left: 1.5em;
+}*/
 
 #main-showing, #navigation-showing,
 #main-hidden, #navigation-hidden {
@@ -484,7 +509,7 @@ body {
 /* resetter */
 #col-layout-1c:checked ~ #content-container .content-part,
 #col-layout-1c:checked ~ #content-container #navigation-content,
-#col-layout-1c:checked ~ #content-container #detail,
+#col-layout-1c:checked ~ #content-container #detail.content-part,
 #col-layout-1c:checked ~ #content-container #main > h2,
 #col-layout-1c:checked ~ #content-container #main-showing,
 #col-layout-1c:checked ~ #content-container #main-hidden,
@@ -531,13 +556,17 @@ body {
 #col-layout-1c:checked ~ #content-container #main-hidden ~ *,
 #col-layout-1c:checked ~ #content-container #main-showing,            
 #col-layout-1c:checked ~ #content-container #navigation-hidden ~ *,
-#col-layout-1c:checked ~ #content-container #navigation-showing {                
+#col-layout-1c:checked ~ #content-container #navigation-showing,
+#col-layout-1c:checked ~ #content-container #main #results,            
+#col-layout-1c:checked ~ #content-container #navigation #navigation-content {                
     display: none;
 }
 
 
 #col-layout-1c:checked ~ #content-container #main-show:checked ~ #main-hidden ~ *,
-#col-layout-1c:checked ~ #content-container #navigation-show:checked ~ #navigation-hidden ~ * {
+#col-layout-1c:checked ~ #content-container #navigation-show:checked ~ #navigation-hidden ~ *,
+#col-layout-1c:checked ~ #content-container #main-show:checked ~ #main #results,            
+#col-layout-1c:checked ~ #content-container #navigation-show:checked ~ #navigation #navigation-content {
     display: block;
 }
 
@@ -548,6 +577,11 @@ body {
 /* like >= 1200 px */
 #col-layout-3c:checked ~ #content-container .content-part {        
     height: 100%;
+}
+
+#col-layout-3c:checked ~ #content-container #detail.content-part {
+    /* Why ...? */
+    height: 99%;
 }
 
 #col-layout-3c:checked ~ #content-container #navigation,

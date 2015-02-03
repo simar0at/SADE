@@ -50,7 +50,7 @@
         overflow-y: auto;
     }
     .result-body {
-        height: 80%; /* ?! */
+        height: 80%;
     }
 
 }
@@ -69,7 +69,7 @@
     #main-show:checked ~ #detail.content-part,
     #navigation-show:checked ~ #detail.content-part { 
         margin-left: 33%;   
-        width: 66%;       
+        width: 66%;
     }
 
     #navigation, #main {
@@ -98,11 +98,11 @@
     }
 
     #main > h2:before {
-        content:url('images/Suche90.jpg');
+        content:"S";
     }
 
     #navigation > h2:before {
-        content:url('images/Register90.jpg');
+        content:"N";
     }
 
     #main-show:checked ~ #main > h2:before,
@@ -245,7 +245,9 @@
 }
 #col-layout-2c:checked ~  #content-container  #detail.content-part { 
     margin-left: 5%;   
-    width: 95%; 
+    width: 95%;
+    /*Why ... ?*/
+    height: 99%;
 }
 
 #col-layout-2c:checked ~  #content-container    #main-show:checked ~ #detail.content-part,
@@ -288,11 +290,11 @@
 }
 
 #col-layout-2c:checked ~  #content-container     #main > h2:before {
-    content:url('images/Suche90.jpg');
+    content:"S";
 }
 
 #col-layout-2c:checked ~  #content-container     #navigation > h2:before {
-    content:url('images/Register90.jpg');
+    content:"N";
 }
 
 #col-layout-2c:checked ~  #content-container     #main-show:checked ~ #main > h2:before,
@@ -353,10 +355,6 @@
 
 #col-layout-2c:checked ~ #content-container  #navigation-content {
     height: 93.98%;
-}
-
-#col-layout-2c:checked ~ #content-container #detail.content-part {
-    height: 100%;
 }
 
 #col-layout-2c:checked ~ #content-container #main-showing,

@@ -310,7 +310,7 @@ function query(event) {
     targetRequest = baseurl + '?' + $.param(params);
     cr_config.params["query"] = query;
     // persistentLink();    
-    load_(target, targetRequest, customizeIcons );
+    load_(target, targetRequest + ' .result-header,.result-body', customizeIcons );
 }
 
 
