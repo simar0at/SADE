@@ -7,16 +7,17 @@
         height: 100%;
     }
     #navigation, #main {
-        padding-right: 0.8em;
+        padding-left: 0.5em;
     }
 
     #main {
+        padding-right: 0.5em;
         float: left;
         width: 24%;
         overflow-y: hidden;
     }
 
-    #navigation {
+    #navigation {        
         float: left;
         width: 24%;
     }
@@ -278,7 +279,9 @@
 #col-layout-2c:checked ~  #content-container #navigation-show:checked ~ #navigation #navigation-hidden {
     left: auto;
     bottom: auto;
-    right: 1em;
+    /* right: 1em; */
+    width: 100%;    
+    text-align:right;
 }
 
 #col-layout-2c:checked ~  #content-container     #main-show:checked ~ #main > h2 img,

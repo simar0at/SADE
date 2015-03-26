@@ -194,6 +194,10 @@ declare function repo-utils:context-to-project-pid($x-context as xs:string?, $co
             default return ()
 };
 
+declare function repo-utils:context-to-resource-pid($x-context as xs:string?) as map()* {
+    repo-utils:context-to-resource-pid($x-context,())
+};
+
 declare function repo-utils:context-to-resource-pid($x-context as xs:string?, $config) as map()* {
     let $projects := collection(config:path("projects"))
     let $div := $projects//mets:div[@ID = $x-context]
@@ -629,7 +633,9 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
 	           $xslParams:=    <parameters>
 	                               <param name="format" value="{$format}"/>
 	                               <param name="x-context" value="{$x-context}"/>
+	                               <param name="cr_project" value="{config:param-value($config, 'project-pid')}"/>
 	                               <param name="base_url" value="{config:param-value($config,'base-url')}"/>
+	                               <param name="base_url_public" value="{config:param-value($config,'base-url-public')}"/>
 	                               <param name="fcs_prefix" value="{config:param-value($config,'fcs-prefix')}"/>
 	                               <param name="mappings-file" value="{config:param-value($config, 'mappings')}"/>
 	                               <param name="scripts_url" value="{config:param-value($config, 'scripts.url')}"/>
@@ -652,8 +658,10 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
 	                               <param name="format" value="{$format}"/>
               			           <param name="operation" value="{$operation}"/>
               			           <param name="x-context" value="{$x-context}"/>
+              			           <param name="cr_project" value="{config:param-value($config, 'project-pid')}"/>
+	                               <param name="base_url" value="{config:param-value($config,'base-url')}"/>
+	                               <param name="base_url_public" value="{config:param-value($config,'base-url-public')}"/>
               			           <param name="resource-id" value="{config:param-value($config, 'resource-pid')}"/>
-                                    <param name="base_url" value="{config:param-value($config,'base-url')}"/>
                                     <param name="fcs_prefix" value="{config:param-value($config,'fcs-prefix')}"/>
                                     <param name="mappings-file" value="{config:param-value($config, 'mappings')}"/>
 	                               <param name="scripts_url" value="{concat(config:param-value($config, 'base-url'),config:param-value($config, 'scripts-url'))}"/>

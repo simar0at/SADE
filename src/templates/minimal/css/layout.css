@@ -55,16 +55,20 @@ body {
 /* ********************* */
 /* layout switcher (radio buttons) */
 
-#layout-switch-background {
+#options-invoke {
     position: fixed;
-    z-index: 999;
+    right:0px;
+    top:0px;
+/*    z-index: 999;*/
     width: 10px;
     height: 10px;
 }
 
-#layout-switch-labels {
-    position: fixed;
-    background: lightgray;
+#options-labels {
+    position: absolute;
+    right: 0px;
+    top: 0px;
+    background: #eee;
     display: block;
     width: 20em;
     height: 6.7em;
@@ -72,16 +76,17 @@ body {
 }
 
 .col-layout-label {
-    display: inline-block;
+    display: block;
     font-size: 12px;
     color: black;
     height: 20px;
     padding: 0 0.4em 0 1.9em;
+    font-style: normal;
 }
 
-#layout-switch-background:hover ~ input[type=radio],
-#layout-switch-background:hover ~ #layout-switch-labels,
-#layout-switch-labels:hover {
+#options-invoke:hover ~ input[type=radio],
+#options-invoke:hover ~ #options-labels,
+#options-labels:hover {
     display: block;   
 }
 
@@ -89,7 +94,7 @@ body {
 #col-layout-2c,
 #col-layout-3c,
 #col-layout-auto,
-#layout-switch-labels
+#options-labels
  {
     position: fixed;
     z-index: 1000;
@@ -115,20 +120,21 @@ body {
     top: 4.9em;
 }
 
-#col-layout-1c:checked ~ #layout-switch-labels #label-1c,
-#col-layout-2c:checked ~ #layout-switch-labels #label-2c,
-#col-layout-3c:checked ~ #layout-switch-labels #label-3c,
-#col-layout-auto:checked ~ #layout-switch-labels #label-auto {
+#col-layout-1c:checked ~ #options-labels #label-1c,
+#col-layout-2c:checked ~ #options-labels #label-2c,
+#col-layout-3c:checked ~ #options-labels #label-3c,
+#col-layout-auto:checked ~ #options-labels #label-auto {
     padding-left: 0;
 }
 
-#col-layout-1c:checked ~ #layout-switch-labels #label-1c:before,
-#col-layout-2c:checked ~ #layout-switch-labels #label-2c:before,
-#col-layout-3c:checked ~ #layout-switch-labels #label-3c:before,
-#col-layout-auto:checked ~ #layout-switch-labels #label-auto:before {
-    content: "\00A0X";
+#col-layout-1c:checked ~ #options-labels #label-1c:before,
+#col-layout-2c:checked ~ #options-labels #label-2c:before,
+#col-layout-3c:checked ~ #options-labels #label-3c:before,
+#col-layout-auto:checked ~ #options-labels #label-auto:before {
+    font-family: FontAwesome;
+     content: "\f05d";
     display: inline-block;
-    width: 1.5em
+    width: 1.5em;
 }
 
 /*.col-layout-label {
@@ -171,7 +177,7 @@ body {
     background:none;
 }
 
-#user {float:right;}
+#user {float:right; margin-right: 1em;}
 
 #content-container {
     z-index: 0;
@@ -179,10 +185,6 @@ body {
 
 /*#persistent-link-wrapper {position: absolute; right: 1.2em; top:65px;}  */
 
-/* set the box-model to border for easier widths setting */
-.static-text, .intro-image{
-    margin-right: 1%; 
-}
 /*******************/
 /* site part show/hide */
 
@@ -297,20 +299,38 @@ body {
 /*******************/
 /* main */
 
+
+@media all and (min-width: 772px) {
+
 .static-text{
-    float:left;
-    width:40%;
+   /*    float:left;*/
+       width:50%;    
+       max-width:700px;
+       padding:10px;
+       margin-left: 80px;
+       /*    clear:both;*/
+   }
+   
+   .intro-image {
+       position:absolute;
+       padding: 10px 30px;
+    padding-right: 10%;
+       width: calc(50% - 80px);
+/*       max-width:600px;*/
+       left: calc(50% + 80px);
+   }
+} 
+
+@media all and (max-width: 771px) {
+.static-text, .intro-image {    
+/*    width:80%;*/
     max-width:600px;
     padding:10px;
-    margin-left: 5%;
+    margin: auto;    
     /*    clear:both;*/
 }
 
-.intro-image {
-    float: left;
-    padding: 10px 30px;
-    width: 40%;
-}
+} 
 
 .intro-image img { width: 100%; }
 
@@ -337,7 +357,7 @@ body {
 
 #query-input,
 .record .header {    
-    padding: 0 5px;
+/*    padding: 0 5px;*/
 }
 
 #qi,
@@ -357,7 +377,6 @@ body {
 /*.result-body,  {overflow: auto; height:90%;}*/
 
 
-
 /*#content, #main {float: left;}*/
 /*******************/
 /* detail */
@@ -366,8 +385,8 @@ body {
 #detail .navigation {
   position: absolute;
   right: 0;
-  top: 7%;
-  top: calc(26px);
+/*  top: 7%;*/
+/*  top: calc(26px);*/
 }
 
 /*.data-view.cite {display:none;}*/
@@ -383,7 +402,8 @@ body {
 }
 
 #detail .data-view img {
-    width: 100%;    
+/*    width: 100%;    */
+    height: 100%;    
 }
 
 #detail .detail-header {
