@@ -89,7 +89,7 @@ function fcs:query($node as node()*, $model as map(*), $query as xs:string?, $x-
     let $cql-query := $query 
     let $result := 
 (:       fcs:search-retrieve($query, $x-context, xs:integer($start-item), xs:integer($max-items), $x-dataview, $config):)
-       fcsm:search-retrieve($cql-query, $x-context-x, $startRecord , $maximumRecords, $x-dataview-x, $model("config"))
+       fcsm:search-retrieve($cql-query, $x-context-x, $startRecord , $maximumRecords, $x-dataview-x, 'xml', $model("config"))
     let $params := <parameters><param name="format" value="{$x-format}"/>
                   			         <param name="base_url" value="{config:param-value($model,'base-url')}"/>
               			            <param name="x-context" value="{$x-context-x}"/>              			            
