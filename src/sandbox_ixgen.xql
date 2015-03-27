@@ -13,6 +13,7 @@ import module namespace repo-utils = "http://aac.ac.at/content_repository/utils"
 import module namespace project="http://aac.ac.at/content_repository/project" at "core/project.xqm";
 import module namespace index="http://aac.ac.at/content_repository/index" at "core/index.xqm";
 import module namespace ltb = "http://aac.ac.at/content_repository/lookuptable" at "core/lookuptable.xqm";
+import module namespace rf="http://aac.ac.at/content_repository/resourcefragment" at "core/resourcefragment.xqm";
 import module namespace ixgen="http://aac.ac.at/content_repository/generate-index" at "modules/index-functions/generate-index-functions.xqm";
 import module namespace ixfn = "http://aac.ac.at/content-repository/projects-index-functions/" at "modules/index-functions/index-functions.xqm";
 
@@ -21,7 +22,11 @@ let $project-pid := "tunico",
     $config:=config:project-config($project-pid)
     
 (:return ixgen:generate-index-functions($project-pid):)
-(:return xmldb:reindex(project:path($project-pid,"workingcopies")):)
+(:return ixgen:register-project-index-functions():)
 (:return index:store-xconf($project-pid ):)
+(:return xmldb:reindex(project:path($project-pid,"workingcopies")):)
+(:return rf:generate($resource-pid,$project-pid):)
+(:return ltb:generate($resource-pid, $project-pid):)
+
 (:return ltb:dump($resource-pid, $project-pid):)
-(:return :)
+(:return rf:dump($resource-pid, $project-pid):)
