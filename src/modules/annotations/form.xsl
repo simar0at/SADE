@@ -12,14 +12,13 @@
     <xsl:param name="projectPID"/>
     <xsl:param name="resourcePID"/>
     <xsl:param name="resourcefragmentPID"/>
-	<xsl:param name="crID"/>
+    <xsl:param name="crID"/>
     <xsl:param name="annotation-id"/>
     <xsl:param name="annotation-url"/>
     <xsl:param name="method">POST</xsl:param>
     <xsl:param name="action">annotations/annotations.xql</xsl:param>
     <xsl:param name="data"/>
     <xsl:param name="user"/>
-    
     <xsl:variable name="annotation" as="element(an:annotation)*">
         <xsl:for-each select="tokenize($data,'\s*;\s*')">
             <xsl:variable name="doc" select="substring-before(.,':')"/>
@@ -27,7 +26,6 @@
             <xsl:sequence select="doc($doc)//an:annotation[@xml:id = $ann-id]"/>
         </xsl:for-each>
     </xsl:variable>
-    
     <xsl:template match="an:class">
         <form action="{$action}" method="{$method}">
             <input type="hidden" name="action" value="set"/>
@@ -35,7 +33,6 @@
             <xsl:if test="$user!=''">
                 <input type="hidden" name="user" value="{$user}"/>
             </xsl:if>
-            
             <xsl:if test="$projectPID!=''">
                 <input name="projectPID" type="hidden" value="{$projectPID}"/>
             </xsl:if>
@@ -64,8 +61,6 @@
             </table>
         </form>
     </xsl:template>
-    
-
     <xsl:template match="an:category">
      <!--<xsl:message select="$annotation"/>
         <xsl:message select="."/>-->
@@ -126,7 +121,7 @@
                         </xsl:when>
                         <xsl:otherwise>
                             <input name="{$itemName}">
-                                 <xsl:value-of select="$annotation/an:item[@name=$itemName]/text()"/>
+                                <xsl:value-of select="$annotation/an:item[@name=$itemName]/text()"/>
                             </input>
                         </xsl:otherwise>
                     </xsl:choose>
