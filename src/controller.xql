@@ -69,7 +69,10 @@ let $debug := request:get-parameter("debug", '')
  : $params[3] = optionally: name of a core module to operate in the current project's scope, 
                 for example the 'resource' module, which summarizes the structure of a project's resources.   
 ~:)
-let $params := tokenize($exist:path, '/')
+let $params := tokenize($exist:path, '/'),
+    $paramsDebug := serialize(for $item in $params return $item||", "),
+    $log := util:log-app("TRACE",$config:app-name,"controller.xql $params("||$paramsDebug)
+    
 
 (:~
  : The variable <code>$cr-instance</code> holds the base path of the current content repository instance.
@@ -405,15 +408,15 @@ declare function local:redirect-missing-slash($project as xs:string) as element(
                     <forward url="{$exist:controller}/modules/access-control/login.html"/>
                     <view>
                         <forward url="{$exist:controller}/core/view.xql">
-                            <add-parameter name="project" value="{$project}"/>
+                        <add-parameter name="project" value="{$project}"/>
                             <add-parameter name="x-context" value="{request:get-parameter("x-context", $project)}"/>
-                            <add-parameter name="exist-path" value="{$exist:path}"/>
+                        <add-parameter name="exist-path" value="{$exist:path}"/>
                             <add-parameter name="exist-resource" value="{local:exist-resource-index($project)}"/>
                             <add-parameter name="exist-controller" value="{$exist:controller}"/>
                             <add-parameter name="exist-root" value="{$exist:root}"/>
                             <add-parameter name="exist-prefix" value="{$exist:prefix}"/>
                             <set-header name="Cache-Control" value="no-cache"/>
-                        </forward>
+                    </forward>
                     </view>
                 </dispatch>
             (: it is an allowed user, so just go to the second part :)
@@ -486,7 +489,7 @@ declare function local:redirect-missing-slash($project as xs:string) as element(
         return
             if ($facs-requested)
             then
-                <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+    <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
                     <forward url="{$exist:controller}/modules/facsviewer/facsviewer.xql" >
                         <add-parameter name="project" value="{$project}"/>
                         <add-parameter name="exist-path" value="{$exist:path}"/>
