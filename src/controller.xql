@@ -34,7 +34,10 @@ let $debug := request:get-parameter("debug", '')
  : $params[3] = optionally: name of a core module to operate in the current project's scope, 
                 for example the 'resource' module, which summarizes the structure of a project's resources.   
 ~:)
-let $params := tokenize($exist:path, '/')
+let $params := tokenize($exist:path, '/'),
+    $paramsDebug := serialize(for $item in $params return $item||", "),
+    $log := util:log-app("TRACE",$config:app-name,"controller.xql $params("||$paramsDebug)
+    
 
 (:~
  : The variable <code>$cr-instance</code> holds the base path of the current content repository instance.
@@ -397,9 +400,12 @@ switch (true())
                        )
             else $rel-path
             
-        let $log := util:log-app("DEBUG", $config:app-name, "$corr-rel-path = "||$corr-rel-path)
-        let $path := config:resolve-template-to-uri($project-config-map, $corr-rel-path)
-        let $facs-requested:=starts-with($path,'/facs')
+        let $log := (config:model-to-debug($project-config-map),
+                     util:log-app("DEBUG", $config:app-name, "$corr-rel-path = "||$corr-rel-path)
+                     )
+        let $path := config:resolve-template-to-uri($project-config-map, $corr-rel-path),
+            $logResolved := util:log-app("DEBUG", $config:app-name, "$path = "||$path),
+            $facs-requested:=starts-with($path,'/facs')
         return
             if ($facs-requested)
             then
