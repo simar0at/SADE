@@ -17,8 +17,6 @@ declare variable $fcs:defaultMaxRecords := 10;declare variable $fcs:scanSortText
 declare variable $fcs:scanSortSize as xs:string := "size";
 declare variable $fcs:scanSortDefault := $fcs:scanSortText;
 
-import module namespace functx = "http://www.functx.com";
-import module namespace request="http://exist-db.org/xquery/request";
 import module namespace diag = "http://www.loc.gov/zing/srw/diagnostic/" at  "../diagnostics/diagnostics.xqm";
 import module namespace repo-utils = "http://aac.ac.at/content_repository/utils" at "../../core/repo-utils.xqm";
 import module namespace index="http://aac.ac.at/content_repository/index" at "../../core/index.xqm";
@@ -79,10 +77,9 @@ declare function fcs:main($config) as item()* {
 	  else if ($operation eq $fcs:searchRetrieve) then 
       	 let $start-record:= request:get-parameter("startRecord", 1),
 			 $maximum-records  := request:get-parameter("maximumRecords", $fcs:defaultMaxRecords),
-			 $x-dataview := request:get-parameter("x-dataview", repo-utils:config-value($config, 'default.dataview')),
-			 $queryType := request:get-parameter("queryType", ())
+			 $x-dataview := request:get-parameter("x-dataview", repo-utils:config-value($config, 'default.dataview'))
          return 
-            fcs:search-retrieve($query, $x-context, $start-record, $maximum-records, $x-dataview, $recordPacking, $queryType, $config)
+            fcs:search-retrieve($query, $x-context, $start-record, $maximum-records, $x-dataview, $recordPacking, $config)
     else 
       diag:diagnostics('unsupported-operation',$operation)
     
@@ -130,21 +127,14 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
  	  $start-term:= ($scx[2],'')[1],	 
       (: precedence of sort parameter: 1) user input (via $sort), 2) index map definition @sort in <index>, 3) fallback = 'text' via $fcs:scanSortText :)
       (: keyword 'text' and 'size', otherwise fall back on index map definitions :)
-    $sort := if ($p-sort eq $fcs:scanSortText or $p-sort eq $fcs:scanSortSize) then $p-sort else ()	
-	 
-	 let $sanitized-xcontext := repo-utils:sanitize-name($x-context) 
-	 let $project-id := if (config:project-exists($x-context)) then $x-context else cr:resolve-id-to-project-pid($x-context)
-    let $index-doc-name := repo-utils:gen-cache-id("index", ($sanitized-xcontext, $index-name, $sort, $max-depth)),
-        $dummy2 := util:log-app("DEBUG", $config:app-name, "fcs:scan: is in cache: "||repo-utils:is-in-cache($index-doc-name, $config) ),
+      $sort := if ($p-sort eq $fcs:scanSortText or $p-sort eq $fcs:scanSortSize) then $p-sort else (),
       $log := (util:log-app("DEBUG", $config:app-name, "cache-mode: "||$mode),
                util:log-app("DEBUG", $config:app-name, "scan-clause="||$scan-clause||": index: "||$index-name||"start term: "||$start-term),
                util:log-app("DEBUG", $config:app-name, "x-context="||$x-context),
                util:log-app("DEBUG", $config:app-name, "x-filter="||$x-filter),
                util:log-app("DEBUG", $config:app-name, "max-terms="||$max-terms),
                util:log-app("DEBUG", $config:app-name, "max-depth="||$max-depth),
-                util:log-app("DEBUG", $config:app-name, "p-sort="||($p-sort,'no user input (falling back to @sort on <index> map definition)')[1]),
-                util:log-app("DEBUG", $config:app-name, "$index-name="||$index-name),
-                util:log-app("DEBUG", $config:app-name, "$start-term="||($start-term, "no start term given")[1])
+               util:log-app("DEBUG", $config:app-name, "sort="||($sort,'no user input (falling back to @sort on <index> map definition)')[1])
       ),
       $context-mapping := index:map($x-context),
       $sort-or-default := ($sort, $context-mapping//index[@key = $index-name]/@sort)[1],
@@ -175,9 +165,6 @@ else if (not(number($response-position)=number($response-position)) or number($r
 else ()
 };
 
-declare function fcs:search-retrieve($query as xs:string, $x-context as xs:string*, $startRecord as xs:string, $maximumRecords as xs:string, $x-dataview as xs:string*, $recordPacking as xs:string, $config) as item()* {
-  fcs:search-retrieve($query, $x-context, $startRecord, $maximumRecords, $x-dataview, $recordPacking, (), $config)
-};
 
 (:~ 
  : Main search function that handles the searchRetrieve-operation request)
@@ -187,11 +174,10 @@ declare function fcs:search-retrieve($query as xs:string, $x-context as xs:strin
  : @param $startRecord: The nth of all results to display
  : @param $maxmimumRecords: The maximum of records to display
  : @param $x-dataview: A comma-separated list of keywords for the output viwe on the results. This depends on <code>fcs:format-record-data()</code>.
- : @param $config: The project's config
- : @param $queryType: A means for switching the interpretation of $query between CQL (unset) and CQP ("native") and maybe others in the future.
+ : @param $config: The project's config 
  : @see fcs:format-record-data()
 ~:)
-declare function fcs:search-retrieve($query as xs:string, $x-context as xs:string*, $startRecord as xs:string, $maximumRecords as xs:string, $x-dataview as xs:string*, $recordPacking as xs:string, $queryType as xs:string?, $config) as item()* {
+declare function fcs:search-retrieve($query as xs:string, $x-context as xs:string*, $startRecord as xs:string, $maximumRecords as xs:string, $x-dataview as xs:string*, $recordPacking as xs:string, $config) as item()* {
   let $error-in-parameters := fcs:check-searchRetrieve-parameters-and-return-error($query, $recordPacking, $maximumRecords, $startRecord)
   return if (exists($error-in-parameters)) then $error-in-parameters
   else
@@ -200,12 +186,11 @@ declare function fcs:search-retrieve($query as xs:string, $x-context as xs:strin
                util:log-app("DEBUG", $config:app-name, "startRecord="||$startRecord),
                util:log-app("DEBUG", $config:app-name, "maximumRecords="||$maximumRecords),
                util:log-app("DEBUG", $config:app-name, "x-dataview="||$x-dataview),
-               util:log-app("DEBUG", $config:app-name, "recordPacking="||$recordPacking),
-               if (exists($queryType)) then util:log-app("DEBUG", $config:app-name, "queryType="||$queryType) else ()
+               util:log-app("DEBUG", $config:app-name, "recordPacking="||$recordPacking)
       ), $context-mapping := index:map($x-context)
   return
     if (exists($context-mapping/@url)) then
-      fcs-http:search-retrieve($query, $x-context, xs:integer($startRecord), xs:integer($maximumRecords), $x-dataview, $recordPacking, $queryType, $config, $context-mapping)
+      fcs-http:search-retrieve($query, $x-context, xs:integer($startRecord), xs:integer($maximumRecords), $x-dataview, $recordPacking, $config, $context-mapping)
     else
       fcs-db:search-retrieve($query, $x-context, xs:integer($startRecord), xs:integer($maximumRecords), $x-dataview, $recordPacking, $config, $context-mapping)
 };
