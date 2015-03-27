@@ -182,10 +182,8 @@ declare function rf:lookup($element-id as xs:string, $resource-pid as xs:string,
 (:    rf:dump($resource-pid, $project-pid)/id($element-id)/ancestor::fcs:resourceFragment    :)
 (:    rf:dump($resource-pid, $project-pid)//*[@cr:id eq $element-id]/ancestor::fcs:resourceFragment    :)
     let $ids := lt:lookup($element-id,$resource-pid,$project-pid)
-    let $log := util:log-app("DEBUG",$config:app-name,"$element-id ")
-    let $log := util:log-app("DEBUG",$config:app-name,$element-id)
-    let $log := util:log-app("DEBUG",$config:app-name,"$ids ")
-    let $log := util:log-app("DEBUG",$config:app-name,$ids)
+    let $log := (util:log-app("DEBUG",$config:app-name,"rf:lookup: $element-id = "||$element-id),
+                 util:log-app("DEBUG",$config:app-name,"rf:lookup: $ids = "||$ids))
     return 
         for $i in $ids return rf:get($i,$resource-pid,$project-pid)
 };
