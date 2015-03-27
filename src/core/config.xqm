@@ -405,7 +405,9 @@ declare function config:resolve-template-to-uri($model as map(*), $relPath as xs
                         $project-static-baseuri||$relPath,
                         $project-data-baseuri||$relPath,
                         $template-baseuri||$relPath,
-                        $config:app-root-collection||$relPath)
+                        $config:app-root-collection||$relPath),
+        $log2 := (util:log-app("TRACE",$config:app-name,"$dirs = "||serialize($dirs)),
+                 util:log-app("TRACE",$config:app-name,"$base-uris = "||serialize($base-uris)))
     return
         let $available:=
             for $i at $pos in $dirs 
@@ -419,6 +421,19 @@ declare function config:resolve-template-to-uri($model as map(*), $relPath as xs
             if (exists($available))
             then xs:anyURI($available[1])
             else xs:anyURI($relPath)
+};
+
+declare function config:model-to-debug($model as map(*)) as item()* {
+  <disabled/>
+(:  for $key in map:keys($model)
+  let $log := util:log-app("DEBUG",$config:app-name,"$model("||$key||"): "||count($model($key)))
+  return
+     if (count(map:get($model, $key)) > 1) then
+       for $item in map:get($model, $key)
+       return
+          util:log-app("DEBUG",$config:app-name,"["||position()||"] :"||$item)
+     else
+       util:log-app("DEBUG",$config:app-name, map:get($model, $key)):)
 };
 
 (:~

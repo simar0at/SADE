@@ -663,34 +663,34 @@ declare function project:list-resources-resolved($project) as element(sru:search
                  <fcs:DataView type="image" ref="{$indexImage-path}" />
                  {if ($groupuing-index-exists) then <fcs:DataView type="facets">{$res-group}</fcs:DataView> else () }
                </fcs:Resource>,
-               
+    
         $end-time := util:system-dateTime(),
 (:<sru:baseUrl>{repo-utils:config-value($config, "base.url")}</sru:baseUrl>:)
         $ret := 
          <sru:searchRetrieveResponse>
             <sru:version>1.2</sru:version>
             <sru:numberOfRecords>{$count}</sru:numberOfRecords>
-            <sru:echoedSearchRetrieveRequest>
-                  <sru:version>1.2</sru:version>
-                  <sru:query>*</sru:query>
-                  <fcs:x-context>{$project-id}</fcs:x-context>
-                  <fcs:x-dataview>metadata</fcs:x-dataview>
-                  <sru:startRecord>1</sru:startRecord>
-                  <sru:maximumRecords>0</sru:maximumRecords>
-            </sru:echoedSearchRetrieveRequest>
-            <sru:extraResponseData>
-                  <fcs:returnedRecords>{$count}</fcs:returnedRecords>                                
-                  <fcs:duration>{$end-time - $start-time }</fcs:duration>                                
-            </sru:extraResponseData>
+                            <sru:echoedSearchRetrieveRequest>
+                                <sru:version>1.2</sru:version>
+                                <sru:query>*</sru:query>
+                                <fcs:x-context>{$project-id}</fcs:x-context>
+                                <fcs:x-dataview>metadata</fcs:x-dataview>
+                                <sru:startRecord>1</sru:startRecord>
+                                <sru:maximumRecords>0</sru:maximumRecords>
+                            </sru:echoedSearchRetrieveRequest>
+                            <sru:extraResponseData>
+                              	<fcs:returnedRecords>{$count}</fcs:returnedRecords>                                
+                                <fcs:duration>{$end-time - $start-time }</fcs:duration>                                
+                            </sru:extraResponseData>
             <sru:records>{for $res at $pos in $resources
-            return <sru:record>
-                         <sru:recordSchema>http://clarin.eu/fcs/1.0/Resource.xsd</sru:recordSchema>
-                         <sru:recordPacking>xml</sru:recordPacking>
-                         <sru:recordData>{$res}</sru:recordData>
-                         <sru:recordPosition>{$pos}</sru:recordPosition>
-                         <sru:recordIdentifier>{xs:string($res/@pid)}</sru:recordIdentifier>
+                                    return  <sru:record>
+                                	              <sru:recordSchema>http://clarin.eu/fcs/1.0/Resource.xsd</sru:recordSchema>
+                                	              <sru:recordPacking>xml</sru:recordPacking>
+                                	              <sru:recordData>{$res}</sru:recordData>
+                                	              <sru:recordPosition>{$pos}</sru:recordPosition>
+                                	              <sru:recordIdentifier>{xs:string($res/@pid)}</sru:recordIdentifier>
                     </sru:record>}                                	          
-            </sru:records>                            
+                             </sru:records>                            
         </sru:searchRetrieveResponse>,
         $logRet := util:log-app("TRACE", $config:app-name, "project:list-resources-resolved retrun "||substring(serialize($ret), 1, 240))
     return $ret
