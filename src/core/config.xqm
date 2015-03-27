@@ -354,7 +354,9 @@ declare function config:resolve-to-dbpath($model as map(*), $relPath as xs:strin
  : </ol> 
 ~:)
 declare function config:resolve-template-to-uri($model as map(*), $relPath as xs:string) as xs:anyURI {
-    let $project-template-dir := config:param-value($model, 'project-template-dir'),
+    let $log := (util:log-app("TRACE",$config:app-name, "$relPath =  "||$relPath),
+                 config:model-to-debug($model)),
+        $project-template-dir := config:param-value($model, 'project-template-dir'),
         $project-template-baseuri:= config:param-value($model, 'project-template-baseuri'),
         $project-static-dir := config:param-value($model, 'project-static-dir'),
         $project-static-baseuri:= config:param-value($model, 'project-static-baseuri'),
@@ -372,7 +374,9 @@ declare function config:resolve-template-to-uri($model as map(*), $relPath as xs
                         $project-static-baseuri||$relPath,
                         $project-data-baseuri||$relPath,
                         $template-baseuri||$relPath,
-                        $config:app-root-collection||$relPath)
+                        $config:app-root-collection||$relPath),
+        $log2 := (util:log-app("TRACE",$config:app-name,"$dirs = "||serialize($dirs)),
+                 util:log-app("TRACE",$config:app-name,"$base-uris = "||serialize($base-uris)))
     return
         let $available:=
             for $i at $pos in $dirs 
@@ -386,6 +390,19 @@ declare function config:resolve-template-to-uri($model as map(*), $relPath as xs
             if (exists($available))
             then xs:anyURI($available[1])
             else xs:anyURI($relPath)
+};
+
+declare function config:model-to-debug($model as map(*)) as item()* {
+  <disabled/>
+(:  for $key in map:keys($model)
+  let $log := util:log-app("DEBUG",$config:app-name,"$model("||$key||"): "||count($model($key)))
+  return
+     if (count(map:get($model, $key)) > 1) then
+       for $item in map:get($model, $key)
+       return
+          util:log-app("DEBUG",$config:app-name,"["||position()||"] :"||$item)
+     else
+       util:log-app("DEBUG",$config:app-name, map:get($model, $key)):)
 };
 
 (:~
@@ -775,7 +792,9 @@ declare function config:module-config() as item()* {
  : @param $project project identifier
 ~:)
 declare function config:project-exists($project as xs:string) {
-    exists(collection($config-params:projects-dir)//mets:mets[@OBJID = $project])
+    let $log := util:log-app("TRACE",$config:app-name, "config:project-exists: $project: "||$project)
+    return
+       exists(collection($config-params:projects-dir)//mets:mets[@OBJID = $project])
 };
 
 declare function config:shib-user() {

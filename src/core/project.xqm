@@ -249,13 +249,15 @@ declare function project:get($project) as element(mets:mets)? {
         (: also try to get it out of the mixed config-sequence: :)
            if (exists($project[. instance of element(mets:mets)])) then $project[. instance of element(mets:mets)]
            else 
-           let $project_ := collection(config:path("projects"))//mets:mets[@OBJID eq $project]    
+           let $log := util:log-app('TRACE', $config:app-name, 'project:get $project = '||$project),
+               $project_ := collection(config:path("projects"))//mets:mets[@OBJID eq $project]    
            return
             if (count($project_) gt 1)
             then 
                 let $log:=(util:log-app("WARN",$config:app-name, "project-id corruption: found more than 1 project with id "||$project||"."),for $p in $project return base-uri($p))
                 return $project_[1]
-            else $project_
+            else 
+                $project_
             
                           
 };
