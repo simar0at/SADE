@@ -14,8 +14,9 @@ xquery version "3.0";
 : @since 2011-11-01 
 : @version 1.1 
 :)
-module namespace fcs = "http://clarin.eu/fcs/1.0/db";
+module namespace fcs-db = "http://clarin.eu/fcs/1.0/db";
  
+declare namespace fcs = "http://clarin.eu/fcs/1.0";
 declare namespace err = "http://www.w3.org/2005/xqt-errors";
 declare namespace sru = "http://www.loc.gov/zing/srw/";
 declare namespace zr = "http://explain.z3950.org/dtd/2.0/";
@@ -46,23 +47,23 @@ import module namespace index="http://aac.ac.at/content_repository/index" at "..
 import module namespace rf="http://aac.ac.at/content_repository/resourcefragment" at "../../core/resourcefragment.xqm";
 
 
-declare variable $fcs:explain as xs:string := "explain";
-declare variable $fcs:scan  as xs:string := "scan";
-declare variable $fcs:searchRetrieve as xs:string := "searchRetrieve";
+declare variable $fcs-db:explain as xs:string := "explain";
+declare variable $fcs-db:scan  as xs:string := "scan";
+declare variable $fcs-db:searchRetrieve as xs:string := "searchRetrieve";
 
 declare variable $config:app-root external;
 
-declare variable $fcs:scanSortText as xs:string := "text";
-declare variable $fcs:scanSortSize as xs:string := "size";
-declare variable $fcs:scanSortDefault := $fcs:scanSortText;
-declare variable $fcs:indexXsl := doc(concat(system:get-module-load-path(),'/index.xsl'));
-declare variable $fcs:flattenKwicXsl := doc(concat(system:get-module-load-path(),'/flatten-kwic.xsl'));
-declare variable $fcs:kwicWidth := 40;
-declare variable $fcs:filterScanMinLength := 2;
-declare variable $fcs:defaultMaxTerms := 50;
-declare variable $fcs:defaultMaxRecords := 10;
+declare variable $fcs-db:scanSortText as xs:string := "text";
+declare variable $fcs-db:scanSortSize as xs:string := "size";
+declare variable $fcs-db:scanSortDefault := $fcs-db:scanSortText;
+declare variable $fcs-db:indexXsl := doc(concat(system:get-module-load-path(),'/index.xsl'));
+declare variable $fcs-db:flattenKwicXsl := doc(concat(system:get-module-load-path(),'/flatten-kwic.xsl'));
+declare variable $fcs-db:kwicWidth := 40;
+declare variable $fcs-db:filterScanMinLength := 2;
+declare variable $fcs-db:defaultMaxTerms := 50;
+declare variable $fcs-db:defaultMaxRecords := 10;
 
-declare function fcs:explain($x-context as xs:string*, $config, $context-mappings as item()+) as item() {
+declare function fcs-db:explain($x-context as xs:string*, $config, $context-mappings as item()+) as item() {
 
     let $md-dbcoll := collection(repo-utils:config-value($config,'metadata.path'))
 
@@ -145,7 +146,7 @@ declare function fcs:explain($x-context as xs:string*, $config, $context-mapping
     return $explain
 };
 
-declare function fcs:scan($x-context as xs:string, $index-name as xs:string, $start-term as xs:string,
+declare function fcs-db:scan($x-context as xs:string, $index-name as xs:string, $start-term as xs:string,
                           $max-terms as xs:integer, $response-position as xs:integer, $max-depth as xs:integer,
                           $x-filter as xs:string, $sort as xs:string?, $mode as xs:string,
                           $config, $context-mappings as item()+) as item() {
@@ -158,7 +159,7 @@ declare function fcs:scan($x-context as xs:string, $index-name as xs:string, $st
         (: scan overall existing indices, do NOT store the result! :)        
         if ($index-name= 'cql.serverChoice') then
         (: FIXME: the start-term/x-filter is temporary hack until the client-side adapts the new param-semantics :) 
-                    fcs:scan-all($x-context, ($start-term, $x-filter)[1], $config)
+                    fcs-db:scan-all($x-context, ($start-term, $x-filter)[1], $config)
         else
         if (repo-utils:is-in-cache($index-doc-name, $config) and not($mode='refresh')) then
           let $log := util:log-app("DEBUG", $config:app-name, "reading index "||$index-doc-name||" from cache")
@@ -224,7 +225,7 @@ declare function fcs:scan($x-context as xs:string, $index-name as xs:string, $st
                     return transform:transform(($metsdivs,<mets:div/>)[1],$xsl,())
 (:                    return $context-map:)
                 else
-                    fcs:do-scan-default($index-name, $x-context, $sort, $config)         
+                    fcs-db:do-scan-default($index-name, $x-context, $sort, $config)         
 
           (: if empty result, return the empty result, but don't store
             to not fill cache with garbage:)
@@ -245,7 +246,7 @@ declare function fcs:scan($x-context as xs:string, $index-name as xs:string, $st
 	(: extract the required subsequence (according to given sort) :)
 	(:let $res-nodeset :=  if ($index-name= 'cql.serverChoice') then
 	                           $index-scan
-	                    else transform:transform($index-scan,$fcs:indexXsl, 
+	                    else transform:transform($index-scan,$fcs-db:indexXsl, 
 			<parameters><param name="scan-clause" value="{$scan-clause}"/>
 			            <param name="mode" value="subsequence"/>
 			            <param name="x-context" value="{$x-context}"/>
@@ -264,7 +265,7 @@ declare function fcs:scan($x-context as xs:string, $index-name as xs:string, $st
     let $start-term-subseq := if (($index-name= 'fcs.resource' and $start-term='root') or $index-name='cql.serverChoice') then '' else $start-term,
         $log := util:log-app("DEBUG", $config:app-name, "$start-term-subseq "||$start-term-subseq)
     
-	let $terms-subsequence := fcs:scan-subsequence($index-scan/descendant-or-self::sru:scanResponse/sru:terms/sru:term, $start-term-subseq, $max-terms, $response-position, $x-filter)
+	let $terms-subsequence := fcs-db:scan-subsequence($index-scan/descendant-or-self::sru:scanResponse/sru:terms/sru:term, $start-term-subseq, $max-terms, $response-position, $x-filter)
     (:  return $res-nodeset   :)
 (:    return $index-scan  :)
     (:DEBUG
@@ -291,14 +292,14 @@ declare function fcs:scan($x-context as xs:string, $index-name as xs:string, $st
 
 @param $maximum-terms how many terms maximally to return; 0 => all; in nested scans limit is applied to every leaf-set separately
 :)
-declare function fcs:scan-subsequence($terms as element(sru:term)*, $start-term as xs:string?, $maximum-terms as xs:integer, $response-position as xs:integer, $x-filter as xs:string?) as item()* {
+declare function fcs-db:scan-subsequence($terms as element(sru:term)*, $start-term as xs:string?, $maximum-terms as xs:integer, $response-position as xs:integer, $x-filter as xs:string?) as item()* {
 (:$max-depth as xs:integer, $p-sort as xs:string?, $mode as xs:string?, $config) as item()? {:)
 let $x-filter-lc := lower-case($x-filter)
 
 let $recurse-subsequence := if ($terms/sru:extraTermData/sru:terms/sru:term) then (: if there are more levels of terms :) 
                         for $term in $terms
                                 let $children-subsequence := if ($term/sru:extraTermData/sru:terms/sru:term) then (: go deeper if children terms :) 
-                                            fcs:scan-subsequence($term/sru:extraTermData/sru:terms/sru:term, $start-term,$maximum-terms, $response-position, $x-filter)
+                                            fcs-db:scan-subsequence($term/sru:extraTermData/sru:terms/sru:term, $start-term,$maximum-terms, $response-position, $x-filter)
                                             else ()
                                             (: only return term if it has any child terms (after filtering) :)
                                 return if (exists($children-subsequence)) then 
@@ -351,16 +352,16 @@ return  $recurse-subsequence
 };
 
 (:~ delivers matching(!) terms from all indexes marked as scan=true(!) 
-    to prevent too many records results are only returned, when the filter is at least $fcs:filterScanMinLength (current default=2)  
+    to prevent too many records results are only returned, when the filter is at least $fcs-db:filterScanMinLength (current default=2)  
 :)
-declare function fcs:scan-all($project as xs:string, $filter as xs:string, $config ) as item()* {
+declare function fcs-db:scan-all($project as xs:string, $filter as xs:string, $config ) as item()* {
 (:  let $indexes :=  collection(project:path("abacus","indexes")):)
   let $index-definitions := index:map($project)//index[@scan='true']
   let $indexes := for $ix in $index-definitions    
                               let $index-doc-name := repo-utils:gen-cache-id("index", ($project, $ix/xs:string(@key), 'text', 1))
                              return repo-utils:get-from-cache($index-doc-name, $config)
   
-  let $terms := if (string-length($filter) >= $fcs:filterScanMinLength) then
+  let $terms := if (string-length($filter) >= $fcs-db:filterScanMinLength) then
                     $indexes//sru:value[ft:query(., $filter)]/parent::sru:term union $indexes//sru:displayTerm[ft:query(., $filter)]/parent::sru:term
                   else ()
             (: get rid of nested terms  and adding cr:type :)
@@ -393,7 +394,7 @@ declare function fcs:scan-all($project as xs:string, $filter as xs:string, $conf
                 <fcs:countTerms level="total">{count($terms//sru:term)}</fcs:countTerms>:)
 };
 
-declare function fcs:do-scan-default($index as xs:string, $x-context as xs:string, $sort as xs:string?, $config) as item()* {
+declare function fcs-db:do-scan-default($index as xs:string, $x-context as xs:string, $sort as xs:string?, $config) as item()* {
     let $ts0 := util:system-dateTime()
     let $project-pid := repo-utils:context-to-project-pid($x-context,$config)
     let $facets := index:facets($index,$project-pid)
@@ -406,15 +407,15 @@ declare function fcs:do-scan-default($index as xs:string, $x-context as xs:strin
     let $data := repo-utils:context-to-data($x-context,$config),
         $logData := util:log-app("DEBUG", $config:app-name, "fcs:do-scan-default: $data: "||count($data)),
     (: this limit is introduced due to performance problem >50.000?  nodes (100.000 was definitely too much) :)
-(:        $nodes := subsequence(util:eval("$data//"||$path),1,$fcs:maxScanSize):)
+(:        $nodes := subsequence(util:eval("$data//"||$path),1,$fcs-db:maxScanSize):)
         $nodes := index:apply-index($data, $index,$project-pid,())
 
     let $index-label := ($index-elem/xs:string(@label), $index-elem/xs:string(@key) )[1]
     let $terms :=
         if ($nodes) then 
             if ($facets/index)
-                then fcs:group-by-facet($nodes, $sort, $facets/index, $project-pid)
-                else fcs:term-from-nodes($nodes, $sort, $index, $project-pid)
+                then fcs-db:group-by-facet($nodes, $sort, $facets/index, $project-pid)
+                else fcs-db:term-from-nodes($nodes, $sort, $index, $project-pid)
            else ()
     let $ts1 := util:system-dateTime()
     let $dummy2 := util:log-app("DEBUG", $config:app-name, "fcs:do-scan-default: index: "||$index||", duration:"||($ts1 - $ts0))        
@@ -435,7 +436,7 @@ declare function fcs:do-scan-default($index as xs:string, $x-context as xs:strin
 };
 
 (:%private :)
-declare function fcs:term-from-nodes($nodes as item()+, $order-param as xs:string?, $index-key as xs:string, $project-pid as xs:string) {
+declare function fcs-db:term-from-nodes($nodes as item()+, $order-param as xs:string?, $index-key as xs:string, $project-pid as xs:string) {
     let $ts0 := util:system-dateTime()
     let $dummy := util:log-app("DEBUG", $config:app-name, "fcs:term-from-nodes: "||$index-key)
     let $termlabels := project:get-termlabels($project-pid,$index-key)
@@ -457,7 +458,7 @@ declare function fcs:term-from-nodes($nodes as item()+, $order-param as xs:strin
                     return map:new(($value-map,$label-map)):)
     let $ts1 := util:system-dateTime()
     let $index-elem := index:index($index-key,$project-pid)
-    let $sort := ($order-param,$index-elem/@sort[.=($fcs:scanSortSize,$fcs:scanSortText)],$fcs:scanSortDefault)[1]
+    let $sort := ($order-param,$index-elem/@sort[.=($fcs-db:scanSortSize,$fcs-db:scanSortText)],$fcs-db:scanSortDefault)[1]
     (: since an expression like  
         group by $x 
         let $y 
@@ -480,7 +481,7 @@ declare function fcs:term-from-nodes($nodes as item()+, $order-param as xs:strin
                 $t-count := $t("count"),
                 $firstOccurence := $t("firstOccurence"),
                 $label := 
-                    let $term-label := string-join(fcs:term-to-label($t-value,$index-key,$project-pid,$termlabels),'')
+                    let $term-label := string-join(fcs-db:term-to-label($t-value,$index-key,$project-pid,$termlabels),'')
                     return
                         if ($term-label) 
                         then $term-label[1]
@@ -510,12 +511,12 @@ declare function fcs:term-from-nodes($nodes as item()+, $order-param as xs:strin
 
 
 
-declare %private function fcs:group-by-facet($data as node()*, $order-param as xs:string?, $index as element(index), $project-pid) as item()* {
+declare %private function fcs-db:group-by-facet($data as node()*, $order-param as xs:string?, $index as element(index), $project-pid) as item()* {
     let $index-key := $index/xs:string(@key)
     let $log := util:log-app("DEBUG", $config:app-name, "fcs:group-by-facet($data, "||$order-param||", "||$index/@key||", "||$project-pid||")")
     let $termlabels := project:get-termlabels($project-pid,$index-key)
     let $index-sorting-key := $index/@sort
-    let $facet_sort := ($order-param,$index-sorting-key[.=($fcs:scanSortSize,$fcs:scanSortText)],$fcs:scanSortDefault)[1]
+    let $facet_sort := ($order-param,$index-sorting-key[.=($fcs-db:scanSortSize,$fcs-db:scanSortText)],$fcs-db:scanSortDefault)[1]
     let $groups := 
         let $maps := 
             for $x in $data 
@@ -528,12 +529,12 @@ declare %private function fcs:group-by-facet($data as node()*, $order-param as x
         return $map
     let $group-keys := map:keys($groups)
     let $log := (util:log-app("DEBUG", $config:app-name, "fcs:group-by-facet: $group-keys: "||string-join($group-keys,', ')),
-                 util:log-app("DEBUG", $config:app-name, "fcs:group-by-facet: $order-param="||$order-param||", $index-sorting-key="||$index-sorting-key||", $fcs:scanSortDefault="||$fcs:scanSortDefault),
+                 util:log-app("DEBUG", $config:app-name, "fcs:group-by-facet: $order-param="||$order-param||", $index-sorting-key="||$index-sorting-key||", $fcs-db:scanSortDefault="||$fcs-db:scanSortDefault),
                  util:log-app("DEBUG", $config:app-name, "fcs:group-by-facet: sorting facet "||$index-key||" by "||$facet_sort))
     let $terms := 
         for $group-key in $group-keys
         let $entries := map:get($groups, $group-key)        
-         let $term-label := fcs:term-to-label($group-key,$index-key,$project-pid,$termlabels)
+         let $term-label := fcs-db:term-to-label($group-key,$index-key,$project-pid,$termlabels)
          let $label := if ($term-label) then $term-label
                                         else index:apply-index($entries[1],$index-key,$project-pid,'label-only')
         let $count := count($entries)        
@@ -548,8 +549,8 @@ declare %private function fcs:group-by-facet($data as node()*, $order-param as x
                 <sru:extraTermData>
                     <cr:type>{$index-key}</cr:type>
                     {if ($index/index)
-                    then fcs:group-by-facet($entries, $order-param, $index/index, $project-pid)
-                    else fcs:term-from-nodes($entries, $order-param, root($index)/index/@key, $project-pid)}
+                    then fcs-db:group-by-facet($entries, $order-param, $index/index, $project-pid)
+                    else fcs-db:term-from-nodes($entries, $order-param, root($index)/index/@key, $project-pid)}
                 </sru:extraTermData>
             </sru:term> 
     return
@@ -616,12 +617,12 @@ you really should try to use the second method with termlabels already resolved
 it spears you a lot of time  
 :)
 (:%private :)
-declare function fcs:term-to-label($term as xs:string?, $index as xs:string, $project-pid as xs:string) as xs:string?{
+declare function fcs-db:term-to-label($term as xs:string?, $index as xs:string, $project-pid as xs:string) as xs:string?{
     
 (:    return ($labels//term[@key=$term][ancestor::*/@key=$index],$term)[1]:)
     if ($term) then 
             let $termlabels := project:get-termlabels($project-pid)
-            return fcs:term-to-label($term,$index,$project-pid, $termlabels)
+            return fcs-db:term-to-label($term,$index,$project-pid, $termlabels)
          else  ()
 };
 
@@ -630,7 +631,7 @@ this is the preferred method, the resolution of the projects termlabels map shou
 to prevent repeated lookup of this map, which has serious performance impact
 :)
 (:%private :)
-declare function fcs:term-to-label($term as xs:string?, $index as xs:string, $project-pid as xs:string, $termlabels) as xs:string?{
+declare function fcs-db:term-to-label($term as xs:string?, $index as xs:string, $project-pid as xs:string, $termlabels) as xs:string?{
     
 (:    return ($labels//term[@key=$term][ancestor::*/@key=$index],$term)[1]:)
     if ($term and $termlabels) then 
@@ -650,7 +651,7 @@ declare function fcs:term-to-label($term as xs:string?, $index as xs:string, $pr
  : @param $config: The project's config 
  : @see fcs:format-record-data()
 ~:)
-declare function fcs:search-retrieve($query as xs:string, $x-context as xs:string*,
+declare function fcs-db:search-retrieve($query as xs:string, $x-context as xs:string*,
                                      $startRecord as xs:integer, $maximumRecords as xs:integer,
                                      $x-dataview as xs:string*, $recordPacking as xs:string,
                                      $config, $context-mappings as item()+) as item()* {
@@ -684,11 +685,11 @@ declare function fcs:search-retrieve($query as xs:string, $x-context as xs:strin
                 else repo-utils:filter-by-context($result-unfiltered,$context-parsed,$config),
             $log := util:log-app("TRACE", $config:app-name, "fcs:search-retrieve: $result = "||serialize($result))
         let	$result-count := fn:count($result),            
-            $facets := if (contains($x-dataview,'facets') and $result-count > 1) then fcs:generateFacets($result, $query) else (),
+            $facets := if (contains($x-dataview,'facets') and $result-count > 1) then fcs-db:generateFacets($result, $query) else (),
 
             $ordered-result := if (contains($query,$config:INDEX_INTERNAL_RESOURCEFRAGMENT))
                 then $result
-                else fcs:sort-result($result, $query, $config),                
+                else fcs-db:sort-result($result, $query, $config),                
             $log := util:log-app("TRACE", $config:app-name, "fcs:search-retrieve: $ordered-result = "||serialize($ordered-result)),                               
             $result-seq := fn:subsequence($ordered-result, $startRecord, $maximumRecords),
 (:            $result-seq := fn:subsequence($result, $startRecord, $maximumRecords),:)
@@ -712,7 +713,7 @@ declare function fcs:search-retrieve($query as xs:string, $x-context as xs:strin
              let $records :=
                <sru:records>{
                 for $rec at $pos in $result-seq-expanded
-         	    let $rec-data := fcs:format-record-data($result-seq[$pos], $rec, $x-dataview, $x-context, $config-param)
+         	    let $rec-data := fcs-db:format-record-data($result-seq[$pos], $rec, $x-dataview, $x-context, $config-param)
                 return 
                 for $rec-data-part in $rec-data return 
          	          <sru:record>
@@ -776,7 +777,7 @@ declare function fcs:search-retrieve($query as xs:string, $x-context as xs:strin
 (:~ sort result 
 currently supporting only default sort by resource (the explicit resource order as defined in project.xml 
 TODO: read the sortkeys from orig-query and order by those :)
-declare function fcs:sort-result ($result, $orig-query as xs:string, $config) as node()* {
+declare function fcs-db:sort-result ($result, $orig-query as xs:string, $config) as node()* {
 let $project-id := ($result/xs:string(@cr:project-id))[1]
 let $resources-in-result := distinct-values ( $result/data(@cr:resource-pid))
 let $resource-list := project:list-resources($project-id)[xs:string(@ID) = $resources-in-result]
@@ -794,7 +795,7 @@ For now only for faceting over resources
 
 xsi:schemaLocation="http://docs.oasis-open.org/ns/search-ws/facetedResults http://docs.oasis-open.org/search-ws/searchRetrieve/v1.0/os/schemas/facetedResults.xsd"
 :)
-declare function fcs:generateFacets($result, $orig-query) {
+declare function fcs-db:generateFacets($result, $orig-query) {
  let $project-id := ($result/xs:string(@cr:project-id))[1]
  let $resources-in-result := distinct-values ( $result/data(@cr:resource-pid)) 
  (:for $hit in $result
@@ -829,9 +830,9 @@ return <sru:facetedResults>
 
 };
 
-(:declare function fcs:format-record-data($record-data as node(), $data-view as xs:string*, $x-context as xs:string*, $config as item()*, $resource-data as map(*)?) as item()*  {:)
-declare function fcs:format-record-data($record-data as node(), $data-view as xs:string*, $x-context as xs:string*, $config as item()*) as item()*  {
-    fcs:format-record-data($record-data, $record-data, $data-view, $x-context, $config)
+(:declare function fcs-db:format-record-data($record-data as node(), $data-view as xs:string*, $x-context as xs:string*, $config as item()*, $resource-data as map(*)?) as item()*  {:)
+declare function fcs-db:format-record-data($record-data as node(), $data-view as xs:string*, $x-context as xs:string*, $config as item()*) as item()*  {
+    fcs-db:format-record-data($record-data, $record-data, $data-view, $x-context, $config)
 };
 
 
@@ -844,7 +845,7 @@ all based on mappings and parameters (data-view)
                     if not providable, setting the same data as in $record-data-input works mostly (expect, when you want to move out of the base_elem)
 @param $record-data-input the base-element with the match hits inside (marked with exist:match) 
 :)
-declare function fcs:format-record-data($orig-sequence-record-data as node(), $record-data-input as node(), $data-view as xs:string*, $x-context as xs:string*, $config as item()*) as item()*  {
+declare function fcs-db:format-record-data($orig-sequence-record-data as node(), $record-data-input as node(), $data-view as xs:string*, $x-context as xs:string*, $config as item()*) as item()*  {
     
     let $title := index:apply-index($orig-sequence-record-data, "title", $x-context),
         $log := util:log-app("DEBUG", $config:app-name, "fcs:format-record-data for "||$title||" data-views: "||string-join($data-view, ', '))
@@ -874,7 +875,7 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
     let $match-ids := if (exists(util:expand($record-data-input)//exist:match/parent::*/data(@cr:id)))
                       then
                           let $exist-matches := util:expand($record-data-input)//exist:match
-                          let $log := util:log-app("DEBUG", $config:app-name, "fcs:format-record-data: "||$exist-matches/parent::*)
+                          let $log := util:log-app("TRACE", $config:app-name, "fcs:format-record-data: "||$exist-matches/parent::*)
                           return (:$exist-matches/parent::*/data(@cr:id):)
                                 for $exist-match in $exist-matches
                                 return
@@ -893,10 +894,10 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
                                         if (exists($match-ids)) 
                                         then 
                                             let $cr-id-to-lookup := (:if(matches($match-ids[1],':\d+:\d+$')) then replace($match-ids[1],':\d+:\d+$','') else:) $match-ids[1],
-                                                $log := util:log-app("DEBUG", $config:app-name, "fcs:format-record-data: $cr-id-to-lookup = "||$cr-id-to-lookup)
+                                                $log := util:log-app("TRACE", $config:app-name, "fcs:format-record-data: $cr-id-to-lookup = "||$cr-id-to-lookup)
                                             return rf:lookup-id($cr-id-to-lookup,$resource-pid, $project-id)[1]
                                         else util:log-app("ERROR", $config:app-name, "$match-ids is empty"),
-        $log := util:log-app("INFO",$config:app-name,"$resourcefragment-pid: '"||$resourcefragment-pid||"'")
+        $log := util:log-app("TRACE",$config:app-name,"$resourcefragment-pid: '"||$resourcefragment-pid||"'")
     let $rf :=      if ($record-data-input/@*[local-name()=$config:RESOURCEFRAGMENT_PID_NAME] or empty($match-ids)) 
                     then $record-data-input
                     else rf:lookup((:if(matches($match-ids[1],':\d+:\d+$')) then replace($match-ids[1],':\d+:\d+$','') else :)$match-ids[1],$resource-pid, $project-id)
@@ -918,9 +919,9 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
                                 then 
                                     if ($config("x-highlight") = "off") 
                                     then $rf
-                                    else fcs:highlight-matches-in-copy($rf, $matches-to-highlight)
+                                    else fcs-db:highlight-matches-in-copy($rf, $matches-to-highlight)
 (:    DEBUG:                             else fcs:highlight-matches-in-copy(($rf,<missing-rf match-ids="{$match-ids[1]}" >{$record-data-input}</missing-rf>)[1], $matches-to-highlight):)
-                                 else fcs:highlight-matches-in-copy($rf, $matches-to-highlight)
+                                 else fcs-db:highlight-matches-in-copy($rf, $matches-to-highlight)
                             else $rf
                         
 
@@ -950,28 +951,28 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
                                 return rf:get($rfp/@ID,$resource-pid,$project-id)/*
         
     (:    let $rf2 := <ref>{($record-data-highlighted)}</ref>:)
-    let $rf2 := fcs:highlight-matches-in-copy($record-data-input, $matches-to-highlight)
+    let $rf2 := fcs-db:highlight-matches-in-copy($record-data-input, $matches-to-highlight)
     (:    ,$rf-window-next:)
-    (:   let $debug :=   <fcs:DataView type="debug" count="{count($record-data-highlighted)}">{transform:transform($record-data-highlighted, $fcs:flattenKwicXsl,())}</fcs:DataView>:)
+    (:   let $debug :=   <fcs:DataView type="debug" count="{count($record-data-highlighted)}">{transform:transform($record-data-highlighted, $fcs-db:flattenKwicXsl,())}</fcs:DataView>:)
          let $debug :=   <fcs:DataView type="debug" count="{count($rf)}" matchids="{$matches-to-highlight}">{$record-data}</fcs:DataView>
         
     let $kwic := if (contains($data-view,'kwic')) then
-                   let $kwic-config := <config width="{$fcs:kwicWidth}"/>
+                   let $kwic-config := <config width="{$fcs-db:kwicWidth}"/>
                    (: tentatively kwic-ing from original input - to get the closest match
                     however this fails when matching on attributes, where the exist:match is only added in the highlighting function,
                     thus we need the processed record-data :)
 (:                   let $kwic-html := kwic:summarize($record-data-input, $kwic-config):)
                 (: we create the kwic from the working copy, thus we look up the resourcefragment :)
-                 (:let $wc-fragment :=  (for $m in $matches-to-highlight return wc:lookup($m,$resource-pid,$project-id))/ancestor-or-self::*[string-length(.) > $fcs:kwicWidth][1]
+                 (:let $wc-fragment :=  (for $m in $matches-to-highlight return wc:lookup($m,$resource-pid,$project-id))/ancestor-or-self::*[string-length(.) > $fcs-db:kwicWidth][1]
                  let $wc-fragment-highlighted := fcs:highlight-matches-in-copy($wc-fragment,$matches-to-highlight) 
-                 let $flattened-record := transform:transform($wc-fragment-highlighted, $fcs:flattenKwicXsl,()):)
+                 let $flattened-record := transform:transform($wc-fragment-highlighted, $fcs-db:flattenKwicXsl,()):)
 (: DEBUG                 let $kwicInput := $record-data[1]:)
-                let $kwicInput := ($orig-sequence-record-data/ancestor-or-self::*[string-length(.) ge $fcs:kwicWidth][1],$record-data[1])[1]
+                let $kwicInput := ($orig-sequence-record-data/ancestor-or-self::*[string-length(.) ge $fcs-db:kwicWidth][1],$record-data[1])[1]
 (:                 let $kwicInput-highlighted := $kwicInput:)
-                 let $kwicInput-highlighted := fcs:highlight-matches-in-copy($kwicInput,$matches-to-highlight)
-                 (:let $log := util:log-app("DEBUG", $config:app-name, $orig-sequence-record-data/ancestor::*[string-length(.) gt $fcs:kwicWidth][1]):)
-                  let $flattened-record := transform:transform($kwicInput-highlighted, $fcs:flattenKwicXsl,())
-(:                 let $flattened-record := repo-utils:serialise-as($record-data[1], 'html', $fcs:searchRetrieve, $config):)
+                 let $kwicInput-highlighted := fcs-db:highlight-matches-in-copy($kwicInput,$matches-to-highlight)
+                 (:let $log := util:log-app("DEBUG", $config:app-name, $orig-sequence-record-data/ancestor::*[string-length(.) gt $fcs-db:kwicWidth][1]):)
+                  let $flattened-record := transform:transform($kwicInput-highlighted, $fcs-db:flattenKwicXsl,())
+(:                 let $flattened-record := repo-utils:serialise-as($record-data[1], 'html', $fcs-db:searchRetrieve, $config):)
                  
                  let $kwic-html := kwic:summarize($flattened-record, $kwic-config)
 (:                       DEBUG:)
@@ -995,7 +996,7 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
                         else (: if no kwic-match let's take first 100 characters 
                                         There c/should be some more sophisticated way to extract most significant info 
                                         e.g. match on the query-field :)
-                        substring($record-data[1],1,(2 * $fcs:kwicWidth))                                         
+                        substring($record-data[1],1,(2 * $fcs-db:kwicWidth))                                         
                      else ()
                          
                         
@@ -1107,7 +1108,7 @@ declare function fcs:format-record-data($orig-sequence-record-data as node(), $r
 };
 
 
-declare function fcs:get-pid($mdRecord as element()) {
+declare function fcs-db:get-pid($mdRecord as element()) {
     let $log := util:log-app("INFO",$config:app-name,name($mdRecord))
     return
     switch (name($mdRecord))
@@ -1117,7 +1118,7 @@ declare function fcs:get-pid($mdRecord as element()) {
 }; 
 
 
-declare function fcs:highlight-matches-in-copy($copy as element()+, $ids as xs:string*) as element()+ {
+declare function fcs-db:highlight-matches-in-copy($copy as element()+, $ids as xs:string*) as element()+ {
     let $stylesheet-file := "highlight-matches.xsl",
         $stylesheet:=   doc($stylesheet-file),
         $params := <parameters><param name="cr-ids" value="{string-join($ids,',')}"></param></parameters>
@@ -1133,7 +1134,7 @@ declare function fcs:highlight-matches-in-copy($copy as element()+, $ids as xs:s
 
 
 
-declare function fcs:filter-kwic($node as node(), $mode as xs:string) as xs:string? {
+declare function fcs-db:filter-kwic($node as node(), $mode as xs:string) as xs:string? {
     if ($mode eq 'before')
     then concat($node,' ')
     else concat(' ',$node)
