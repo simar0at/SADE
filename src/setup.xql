@@ -56,7 +56,13 @@ if (not(sm:group-exists("cr-admin"))) then sm:create-group("cr-admin",$config:sy
 util:log("INFO", "$target: "|| $target),
 (: setup projects-dir :)
 local:mkcol("", $config:projects-dir),
-local:mkcol("", $config:data-dir),
+(: setup data-dir :)
+local:mkcol("", $config:data-dir/_workingcopies),
+local:mkcol("", $config:data-dir/_resourcefragments),
+local:mkcol("", $config:data-dir/_lookupables),
+local:mkcol("", $config:data-dir/_md),
+local:mkcol("", $config:data-dir/_indexes),
+
 local:mkcol(""||$config:data-dir, "_indexes"),
 (: store the cr-projects collection configuration :)
 local:mkcol("/db/system/config", $config:projects-dir),
@@ -84,6 +90,7 @@ xdb:store("/db/system/config/"||$config:projects-dir,'collection.xconf',$local:p
 xdb:reindex($config:projects-dir),
 xdb:reindex($target),
 
+sm:chown(xs:anyURI($config:data-dir/_indexes), $local:cr-writer/write-user),
 util:log("INFO", "** setting up default project 'defaultProject' **"),
 project:new("defaultProject"),
 sm:add-group-member('defaultProjectAdmin', 'admin')
