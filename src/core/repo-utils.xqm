@@ -682,8 +682,10 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
 	                           </parameters>
 	       let $res := if ($xslDoc) 
 	                   then
-	                       let $option := util:declare-option("exist:serialize", "method=text media-type=application/json")
-	                       return transform:transform($item,$xslDoc,$xslParams)
+	                       let $option := util:declare-option("exist:serialize", "method=text media-type=application/json"),
+	                           $log := util:log-app("TRACE", $config:app-name, "repo-utils:serialise-as: $item = "||serialize($item)||" $xslParams = "||serialize($xslParams))
+	                       return
+	                           transform:transform($item,$xslDoc, $xslParams)
                        else 
                            let $option := util:declare-option("exist:serialize", "method=json media-type=application/json")    
                            return $item
@@ -712,7 +714,10 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
 <param name="base_url" value="{config:param-value($config,'public-repo-baseurl')}"/>
 :)
 	       let $res := if (exists($xslDoc)) 
-	                   then transform:transform($item,$xslDoc, $xslParams)
+	                   then
+	                     let $log := util:log-app("TRACE", $config:app-name, "repo-utils:serialise-as: $item = "||serialize($item)||" $xslParams = "||serialize($xslParams))
+	                     return
+	                        transform:transform($item,$xslDoc, $xslParams)
 	                   else 
 	                       let $log:=util:log-app("ERROR", $config:app-name, "repo-utils:serialise-as() could not find stylesheet '"||$xslDoc||"' for $operation: "||$operation||", $format: "||$format||".")
 	                       return diag:diagnostics("unsupported-param-value",concat('$operation: ', $operation, ', $format: ', $format))
