@@ -40,7 +40,7 @@ local:mkcol("", $config:projects-dir),
 (: setup data-dir :)
 local:mkcol("", $config:data-dir||"/_workingcopies"),
 local:mkcol("", $config:data-dir||"/_resourcefragments"),
-local:mkcol("", $config:data-dir||"/_lookupables"),
+local:mkcol("", $config:data-dir||"/_lookuptables"),
 local:mkcol("", $config:data-dir||"/_md"),
 local:mkcol("", $config:data-dir||"/_indexes"),
 

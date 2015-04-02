@@ -63,7 +63,9 @@ declare
     %templates:default("x-format", "html")
 function app:info ($node as node(), $model as map(*), $key, $x-format) {
 
-    let $val := config:param-value($model, $key)
+    let $val := config:param-value($model, $key),
+        $log := (util:log-app("DEBUG",$config:app-name,"app:info $key = "||$key),
+                 util:log-app("TRACE",$config:app-name,"app:info $val = "||serialize($val)))
     
     let $ret := 
         if (contains($x-format,'html')) then
@@ -83,13 +85,12 @@ declare
     %templates:default("x-format", "html")
 function app:list-resources($node as node(), $model as map(*), $x-format) {
    
-   let $log := util:log-app("DEBUG",$config:app-name,"app:list-resources") 
 (:    let $structMap := project:list-resources($model("config")):)
     (: project/resource:* couldn't correctly handle the config sequence chaos as is in $model("config") 
     so rather give them just the project-pid :) 
-    let $project-pid := config:param-value($model("config"),$config:PROJECT_PID_NAME)    
-    let $ress := project:list-resources-resolved($project-pid)
-    let $log := util:log-app("DEBUG",$config:app-name,"app:list-resources-END")
+    let $project-pid := config:param-value($model("config"),$config:PROJECT_PID_NAME),    
+        $ress := project:list-resources-resolved($project-pid),
+        $log := util:log-app("DEBUG",$config:app-name,"app:list-resources: $project-pid = "||$project-pid||" $ress = "||$ress)
     (:for $res in $ress
         let $dmd := resource:dmd($res, $model("config") ):)            
         return repo-utils:serialise-as($ress, $x-format, 'resource-list', $model("config"))
