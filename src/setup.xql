@@ -37,7 +37,13 @@ declare variable $local:projects-xconf := doc($target||"/_cr-projects_xconf.xml"
 util:log("INFO", "$target: "|| $target),
 (: setup projects-dir :)
 local:mkcol("", $config:projects-dir),
-local:mkcol("", $config:data-dir),
+(: setup data-dir :)
+local:mkcol("", $config:data-dir/_workingcopies),
+local:mkcol("", $config:data-dir/_resourcefragments),
+local:mkcol("", $config:data-dir/_lookupables),
+local:mkcol("", $config:data-dir/_md),
+local:mkcol("", $config:data-dir/_indexes),
+
 (: store the collection configuration :)
 local:mkcol("/db/system/config", $target),
 xdb:store-files-from-pattern(concat("/system/config", $target), $dir, "*.xconf"),
@@ -62,5 +68,6 @@ sm:chgrp(xs:anyURI($config:data-dir),'cr-admin'),
 util:log("INFO", "** chown "||$config:data-dir||" "||$config:system-account-user||":cr-admin"),
 sm:chown(xs:anyURI($config:projects-dir),$config:system-account-user),
 sm:chgrp(xs:anyURI($config:data-dir),'cr-admin'),
+sm:chown(xs:anyURI($config:data-dir/_indexes), $local:cr-writer/write-user),
 util:log("INFO", "** setting up default project 'defaultProject' **"),
 project:new("defaultProject")
