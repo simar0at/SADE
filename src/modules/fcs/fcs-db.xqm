@@ -1078,7 +1078,7 @@ declare function fcs-db:format-record-data($orig-sequence-record-data as node(),
     (:                                        case "full"         return $rf[1]/*:)
                                             case "debug"         return $debug 
                                             case "full"         return (if ($rf-window gt 1) then $rf-window-prev else (),
-                                                                       $record-data[1]/*/*,
+                                                                       $record-data[1]/*,
                                                                        if ($rf-window gt 1) then $rf-window-next else ())
                                             case "facs"         return $dv-facs
                                             case "title"        return $dv-title
@@ -1094,7 +1094,7 @@ declare function fcs-db:format-record-data($orig-sequence-record-data as node(),
                             return 
                                 let $data:= switch ($d)
         (:                                        case "full"         return $rf[1]/*:)
-                                                case "full"         return $record-data[1]/*/*
+                                                case "full"         return $record-data[1]/*
                                                 case "facs"         return $dv-facs
                                                 case "title"        return $dv-title
                                                 case "cite"        return $dv-cite
