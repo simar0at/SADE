@@ -29,14 +29,23 @@ declare function fcs-http:explain($x-context as xs:string*, $config, $context-ma
 };
 
 declare function fcs-http:get-result-or-diag($url as xs:anyURI) as item()+ {
-   let $log := (util:log-app("TRACE", $config:app-name, "get-result-or-diag http: GET: "||$url)),
-       $response := httpclient:get($url, false(), ()),
-       $logResp := (util:log-app("TRACE", $config:app-name, "get-result-or-diag http: $response statusCode:"||$response/@statusCode),
+   let $log := (util:log-app("DEBUG", $config:app-name, "get-result-or-diag http: GET: "||$url)),
+       $response := try {httpclient:get($url, false(), ())} catch * {
+       <hc:response statusCode="500">
+         <hc:headers>
+           <hc:header name="Content-Type" value="text/plain; charset=iso-8859-1"/>
+         </hc:headers>
+         <hc:body>
+           {$err:code}: {$err:description}
+         </hc:body>
+       </hc:response>},
+       $logResp := (util:log-app("DEBUG", $config:app-name, "get-result-or-diag http: $response statusCode:"||$response/@statusCode),
                     util:log-app("TRACE", $config:app-name, "get-result-or-diag http: $response type:"||$response/hc:body/@type))
    return
       if ($response/@statusCode != 200) then
         diag:diagnostics('general-error', ("&#10;GET: ", $url, "&#10;", util:serialize($response, ())))
-      else if ($response/hc:body/@mimetype != 'application/xml') then
+      else if ($response/hc:body/@mimetype != 'application/xml' and 
+               $response/hc:body/@mimetype != 'text/xml; charset=UTF-8') then
         diag:diagnostics('general-error', ("&#10;GET: ", $url, "&#10;", util:serialize($response, ())))
       else if ($response/hc:body/@encoding = 'Base64Encoded') then
         util:base64-decode($response/hc:body/text())
@@ -63,18 +72,18 @@ declare function fcs-http:get-query-for-scan($x-context as xs:string, $index-nam
     return
     if ($context-mappings/@type = 'noske') then
        '?version=1.2&amp;operation=scan'||
-       '&amp;scanClause='||$index-name||'='||$start-term||
+       '&amp;scanClause='||$index-name||'='||escape-uri($start-term, true())||
        '&amp;maximumTerms='||$max-terms||
        '&amp;responsePosition='||$response-position
     else if ($context-mappings/@type = 'cr-xq-mets') then
        '?version=1.2&amp;operation=scan&amp;x-context='||$x-context||
-       '&amp;scanClause='||$index-name||'='||$start-term||
+       '&amp;scanClause='||$index-name||'='||escape-uri($start-term, true())||
        '&amp;maximumTerms='||$max-terms||
        '&amp;responsePosition='||$response-position||
        '&amp;x-filter='||$x-filter
     else
        '?version=1.2&amp;operation=scan&amp;x-context='||$x-context||
-       '&amp;scanClause='||$index-name||'='||$start-term||
+       '&amp;scanClause='||$index-name||'='||escape-uri($start-term, true())||
        '&amp;maximumTerms='||$max-terms||
        '&amp;responsePosition='||$response-position
 };
@@ -97,21 +106,21 @@ declare function fcs-http:get-query-for-searchRetrieve($query as xs:string, $x-c
     return
     if ($context-mappings/@type = 'noske') then
        '?version=1.2&amp;operation=searchRetrieve'||
-       '&amp;query='||$query||
+       '&amp;query='||escape-uri($query, true())||
        '&amp;startRecord='||$startRecord||
        '&amp;maximumRecords='||$maximumRecords||
        '&amp;x-dataview='||
        '&amp;recordPacking='||$recordPacking
     else if ($context-mappings/@type = 'cr-xq-mets') then
        '?version=1.2&amp;operation=searchRetrieve&amp;x-context='||$x-context||
-       '&amp;query='||$query||
+       '&amp;query='||escape-uri($query, true())||
        '&amp;maximumTerms='||$startRecord||
        '&amp;maximumRecords='||$maximumRecords||
        '&amp;x-dataview='||$x-dataview||
        '&amp;recordPacking='||$recordPacking
     else
        '?version=1.2&amp;operation=searchRetrieve&amp;x-context='||$x-context||
-       '&amp;query='||$query||
+       '&amp;query='||escape-uri($query, true())||
        '&amp;maximumTerms='||$startRecord||
        '&amp;maximumRecords='||$maximumRecords                                 
 };
