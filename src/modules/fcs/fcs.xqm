@@ -79,9 +79,10 @@ declare function fcs:main($config) as item()* {
 	  else if ($operation eq $fcs:searchRetrieve) then 
       	 let $start-record:= request:get-parameter("startRecord", 1),
 			 $maximum-records  := request:get-parameter("maximumRecords", $fcs:defaultMaxRecords),
-			 $x-dataview := request:get-parameter("x-dataview", repo-utils:config-value($config, 'default.dataview'))
+			 $x-dataview := request:get-parameter("x-dataview", repo-utils:config-value($config, 'default.dataview')),
+			 $queryType := request:get-parameter("queryType", ())
          return 
-            fcs:search-retrieve($query, $x-context, $start-record, $maximum-records, $x-dataview, $recordPacking, $config)
+            fcs:search-retrieve($query, $x-context, $start-record, $maximum-records, $x-dataview, $recordPacking, $queryType, $config)
     else 
       diag:diagnostics('unsupported-operation',$operation)
     
@@ -174,6 +175,9 @@ else if (not(number($response-position)=number($response-position)) or number($r
 else ()
 };
 
+declare function fcs:search-retrieve($query as xs:string, $x-context as xs:string*, $startRecord as xs:string, $maximumRecords as xs:string, $x-dataview as xs:string*, $recordPacking as xs:string, $config) as item()* {
+  fcs:search-retrieve($query, $x-context, $startRecord, $maximumRecords, $x-dataview, $recordPacking, (), $config)
+};
 
 (:~ 
  : Main search function that handles the searchRetrieve-operation request)
@@ -183,10 +187,11 @@ else ()
  : @param $startRecord: The nth of all results to display
  : @param $maxmimumRecords: The maximum of records to display
  : @param $x-dataview: A comma-separated list of keywords for the output viwe on the results. This depends on <code>fcs:format-record-data()</code>.
- : @param $config: The project's config 
+ : @param $config: The project's config
+ : @param $queryType: A means for switching the interpretation of $query between CQL (unset) and CQP ("native") and maybe others in the future.
  : @see fcs:format-record-data()
 ~:)
-declare function fcs:search-retrieve($query as xs:string, $x-context as xs:string*, $startRecord as xs:string, $maximumRecords as xs:string, $x-dataview as xs:string*, $recordPacking as xs:string, $config) as item()* {
+declare function fcs:search-retrieve($query as xs:string, $x-context as xs:string*, $startRecord as xs:string, $maximumRecords as xs:string, $x-dataview as xs:string*, $recordPacking as xs:string, $queryType as xs:string?, $config) as item()* {
   let $error-in-parameters := fcs:check-searchRetrieve-parameters-and-return-error($query, $recordPacking, $maximumRecords, $startRecord)
   return if (exists($error-in-parameters)) then $error-in-parameters
   else
@@ -195,11 +200,12 @@ declare function fcs:search-retrieve($query as xs:string, $x-context as xs:strin
                util:log-app("DEBUG", $config:app-name, "startRecord="||$startRecord),
                util:log-app("DEBUG", $config:app-name, "maximumRecords="||$maximumRecords),
                util:log-app("DEBUG", $config:app-name, "x-dataview="||$x-dataview),
-               util:log-app("DEBUG", $config:app-name, "recordPacking="||$recordPacking)
+               util:log-app("DEBUG", $config:app-name, "recordPacking="||$recordPacking),
+               if (exists($queryType)) then util:log-app("DEBUG", $config:app-name, "queryType="||$queryType) else ()
       ), $context-mapping := index:map($x-context)
   return
     if (exists($context-mapping/@url)) then
-      fcs-http:search-retrieve($query, $x-context, xs:integer($startRecord), xs:integer($maximumRecords), $x-dataview, $recordPacking, $config, $context-mapping)
+      fcs-http:search-retrieve($query, $x-context, xs:integer($startRecord), xs:integer($maximumRecords), $x-dataview, $recordPacking, $queryType, $config, $context-mapping)
     else
       fcs-db:search-retrieve($query, $x-context, xs:integer($startRecord), xs:integer($maximumRecords), $x-dataview, $recordPacking, $config, $context-mapping)
 };
