@@ -90,9 +90,9 @@ declare function fcs-http:get-query-for-scan($x-context as xs:string, $index-nam
 
 declare function fcs-http:search-retrieve($query as xs:string, $x-context as xs:string*,
                                      $startRecord as xs:integer, $maximumRecords as xs:integer,
-                                     $x-dataview as xs:string*, $recordPacking as xs:string,
+                                     $x-dataview as xs:string*, $recordPacking as xs:string, $queryType as xs:string?,
                                      $config, $context-mappings as item()+) as item()+ {
-   let $query := fcs-http:get-query-for-searchRetrieve($query, $x-context, $startRecord, $maximumRecords, $x-dataview, $recordPacking, $config, $context-mappings),
+   let $query := fcs-http:get-query-for-searchRetrieve($query, $x-context, $startRecord, $maximumRecords, $x-dataview, $recordPacking, $queryType, $config, $context-mappings),
        $url := $context-mappings/@url||$query
    return
      fcs-http:get-result-or-diag($url)
@@ -100,9 +100,10 @@ declare function fcs-http:search-retrieve($query as xs:string, $x-context as xs:
 
 declare function fcs-http:get-query-for-searchRetrieve($query as xs:string, $x-context as xs:string*,
                                      $startRecord as xs:integer, $maximumRecords as xs:integer,
-                                     $x-dataview as xs:string*, $recordPacking as xs:string,
+                                     $x-dataview as xs:string*, $recordPacking as xs:string, $queryType as xs:string?,
                                      $config, $context-mappings as item()+) as item()+ {
-    let $log := util:log-app("DEBUG", $config:app-name, "get-query: type "||$context-mappings/@type)
+    let $queryTypeParam := if (exists($queryType)) then '&amp;queryType='||$queryType else (),
+        $log := util:log-app("DEBUG", $config:app-name, "get-query: type "||$context-mappings/@type)
     return
     if ($context-mappings/@type = 'noske') then
        '?version=1.2&amp;operation=searchRetrieve'||
@@ -110,7 +111,8 @@ declare function fcs-http:get-query-for-searchRetrieve($query as xs:string, $x-c
        '&amp;startRecord='||$startRecord||
        '&amp;maximumRecords='||$maximumRecords||
        '&amp;x-dataview='||
-       '&amp;recordPacking='||$recordPacking
+       '&amp;recordPacking='||$recordPacking||
+       $queryTypeParam
     else if ($context-mappings/@type = 'cr-xq-mets') then
        '?version=1.2&amp;operation=searchRetrieve&amp;x-context='||$x-context||
        '&amp;query='||escape-uri($query, true())||
