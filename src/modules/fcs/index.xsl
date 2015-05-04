@@ -249,4 +249,30 @@
                                 <xsl:value-of select="(current-group()//@displayTerm)[1]"/>
                             </sru:displayTerm>
                         </xsl:if>
-                        <sru:numberOfRe
+                        <sru:numberOfRecords>
+                            <xsl:value-of select="count(current-group())"/>
+                        </sru:numberOfRecords>
+                    </sru:term>
+                </xsl:for-each-group>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:for-each-group select="v" group-by="normalize-space(.)">
+                    <xsl:sort select="count(current-group())" data-type="number" order="descending"/>
+                    <sru:term>
+                        <sru:value>
+                            <xsl:value-of select=".//text()"/>
+                        </sru:value>
+                        <xsl:if test="exists(.//@displayTerm)">
+                            <sru:displayTerm>
+                                <xsl:value-of select="(current-group()//@displayTerm)[1]"/>
+                            </sru:displayTerm>
+                        </xsl:if>
+                        <sru:numberOfRecords>
+                            <xsl:value-of select="count(current-group())"/>
+                        </sru:numberOfRecords>
+                    </sru:term>
+                </xsl:for-each-group>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+</xsl:stylesheet>
