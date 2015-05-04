@@ -1,4 +1,6 @@
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:cr="http://aac.ac.at/content_repository" version="2.0"><!--    <xsl:strip-space elements="*"/>--><!--    <xsl:preserve-space elements="tei:seg"/>-->
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:exist="http://exist.sourceforge.net/NS/exist" xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:cr="http://aac.ac.at/content_repository" version="2.0"><!--
+    <xsl:strip-space elements="*"/>--><!--
+    <xsl:preserve-space elements="tei:seg"/>-->
     <xsl:output indent="yes"/>
     <xsl:preserve-space elements="*"/>
     <xsl:template match="/">
@@ -46,7 +48,7 @@
     <xsl:template match="tei:supplied | supplied | tei:corr | corr | tei:reg | reg | tei:figure | figure | tei:note | note"/>
     <!-- headers and footers are not part of running text -->
     <xsl:template match="fw | tei:fw | *[self::seg or self::tei:seg][@type='footer' or @type='header']"/>
-     <!--<xsl:template match="*[self::tei:w|self::w][descendant::seg[@type='footer'] and not(following-sibling::*) or following-sibling::*[1]/self::seg[@type='footer']]">
+    <!--<xsl:template match="*[self::tei:w|self::w][descendant::seg[@type='footer'] and not(following-sibling::*) or following-sibling::*[1]/self::seg[@type='footer']]">
         <xsl:choose>
             <xsl:when test="@cr:wf">
                 <xsl:choose>
