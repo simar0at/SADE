@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:cr="http://aac.ac.at/content_repository" xmlns:sru="http://www.loc.gov/zing/srw/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:fcs="http://clarin.eu/fcs/1.0" version="2.0">
     
     <!--
@@ -250,4 +249,30 @@
                                 <xsl:value-of select="(current-group()//@displayTerm)[1]"/>
                             </sru:displayTerm>
                         </xsl:if>
-                        <sru:numberOfRe
+                        <sru:numberOfRecords>
+                            <xsl:value-of select="count(current-group())"/>
+                        </sru:numberOfRecords>
+                    </sru:term>
+                </xsl:for-each-group>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:for-each-group select="v" group-by="normalize-space(.)">
+                    <xsl:sort select="count(current-group())" data-type="number" order="descending"/>
+                    <sru:term>
+                        <sru:value>
+                            <xsl:value-of select=".//text()"/>
+                        </sru:value>
+                        <xsl:if test="exists(.//@displayTerm)">
+                            <sru:displayTerm>
+                                <xsl:value-of select="(current-group()//@displayTerm)[1]"/>
+                            </sru:displayTerm>
+                        </xsl:if>
+                        <sru:numberOfRecords>
+                            <xsl:value-of select="count(current-group())"/>
+                        </sru:numberOfRecords>
+                    </sru:term>
+                </xsl:for-each-group>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+</xsl:stylesheet>
