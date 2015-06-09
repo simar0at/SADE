@@ -627,6 +627,8 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
         repo-utils:serialise-as($item, $format, $operation, $config, '', $parameters)
 };
 declare function repo-utils:serialise-as($item as node()?, $format as xs:string, $operation as xs:string, $config, $x-context as xs:string, $parameters as node()* ) as item()? {
+    let $log := util:log-app("DEBUG", $config:app-name, "repo-utils:serialise-as: $format = "||$format||" $operation = "||$operation||" $x-context = "||$x-context)
+    return
     switch(true())
         case ($format eq $repo-utils:responseFormatJSon) return	       
 	       let $xslDoc := repo-utils:xsl-doc($operation, $format, $config),
@@ -636,7 +638,7 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
 	                               <param name="cr_project" value="{config:param-value($config, 'project-pid')}"/>
 	                               <param name="base_url" value="{config:param-value($config,'base-url')}"/>
 	                               <param name="base_url_public" value="{config:param-value($config,'base-url-public')}"/>
-	                               <param name="fcs_prefix" value="{config:param-value($config,'fcs-prefix')}"/>
+	                               <param name="fcs_prefix" value="{config:param-value($config,'fcs_prefix')}"/>
 	                               <param name="mappings-file" value="{config:param-value($config, 'mappings')}"/>
 	                               <param name="scripts_url" value="{config:param-value($config, 'scripts.url')}"/>
 	                               <param name="site_name" value="{config:param-value($config, 'site.name')}"/>
@@ -645,10 +647,8 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
 	                           </parameters>
 	       let $res := if ($xslDoc) 
 	                   then
-	                       let $option := util:declare-option("exist:serialize", "method=text media-type=application/json"),
-	                           $log := util:log-app("TRACE", $config:app-name, "repo-utils:serialise-as: $item = "||serialize($item)||" $xslParams = "||serialize($xslParams))
-	                       return
-	                           transform:transform($item,$xslDoc, $xslParams)
+	                       let $option := util:declare-option("exist:serialize", "method=text media-type=application/json")
+	                       return transform:transform($item,$xslDoc,$xslParams)
                        else 
                            let $option := util:declare-option("exist:serialize", "method=json media-type=application/json")    
                            return $item
@@ -664,7 +664,7 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
 	                               <param name="base_url" value="{config:param-value($config,'base-url')}"/>
 	                               <param name="base_url_public" value="{config:param-value($config,'base-url-public')}"/>
               			           <param name="resource-id" value="{config:param-value($config, 'resource-pid')}"/>
-                                    <param name="fcs_prefix" value="{config:param-value($config,'fcs-prefix')}"/>
+                                    <param name="fcs_prefix" value="{config:param-value($config,'fcs_prefix')}"/>
                                     <param name="mappings-file" value="{config:param-value($config, 'mappings')}"/>
 	                               <param name="scripts_url" value="{concat(config:param-value($config, 'base-url'),config:param-value($config, 'scripts-url'))}"/>
 	                               <param name="site_name" value="{config:param-value($config, 'site-name')}"/>
@@ -676,10 +676,7 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
 <param name="base_url" value="{config:param-value($config,'public-repo-baseurl')}"/>
 :)
 	       let $res := if (exists($xslDoc)) 
-	                   then
-	                     let $log := util:log-app("TRACE", $config:app-name, "repo-utils:serialise-as: $item = "||serialize($item)||" $xslParams = "||serialize($xslParams))
-	                     return
-	                        transform:transform($item,$xslDoc, $xslParams)
+	                   then transform:transform($item,$xslDoc, $xslParams)
 	                   else 
 	                       let $log:=util:log-app("ERROR", $config:app-name, "repo-utils:serialise-as() could not find stylesheet '"||$xslDoc||"' for $operation: "||$operation||", $format: "||$format||".")
 	                       return diag:diagnostics("unsupported-param-value",concat('$operation: ', $operation, ', $format: ', $format))
@@ -713,7 +710,7 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
 ~:)
 declare function repo-utils:xsl-doc($operation as xs:string, $format as xs:string, $config) as document-node()? {        
     let $scripts-paths := (config:param-value($config,'scripts.path'),config:path('scripts'))
-    let $log := util:log-app("DEBUG",$config:app-name,"looking for xsl-doc in "||string-join($scripts-paths,' '))
+    let $log := util:log-app("DEBUG",$config:app-name,"looking for xsl-doc in "||string-join($scripts-paths,', '))
     let $xsldoc :=  for $p in $scripts-paths
                     let $path := replace($p,'/$','')
                     return 
