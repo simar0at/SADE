@@ -317,6 +317,8 @@ switch (true())
      : Requests for HTML views are handled by the templating system after check for user authorization. 
     ~:)
     case (ends-with($exist-resource-index, ".html")) return
+        let $log :=util:log-app("TRACE", $config:app-name, "Requests for HTML views.")
+        return    
         (: this is a sequence of two steps, delivering result XOR (either one or the other) :)
         (: step 1: only delivers a result if the project's visibility is protected :)
         (if ($protected) 
@@ -386,7 +388,8 @@ switch (true())
     ~:)
     case ($file-type = $web-resources) return
         (: If the request is made from a module (with separate path-step (currently only /get) :)
-        let $corr-rel-path := 
+        let $log :=util:log-app("TRACE", $config:app-name, "Requests for web resources like JS or CSS."),
+            $corr-rel-path := 
             if (starts-with($rel-path, "/get")) 
             then
                 let $path-parsed := get:parse-relPath($rel-path,$project)
@@ -401,10 +404,10 @@ switch (true())
             else $rel-path
             
         let $log := (config:model-to-debug($project-config-map),
-                     util:log-app("DEBUG", $config:app-name, "$corr-rel-path = "||$corr-rel-path)
+                     util:log-app("TRACE", $config:app-name, "$corr-rel-path = "||$corr-rel-path)
                      )
         let $path := config:resolve-template-to-uri($project-config-map, $corr-rel-path),
-            $logResolved := util:log-app("DEBUG", $config:app-name, "$path = "||$path),
+            $logResolved := util:log-app("TRACE", $config:app-name, "$path = "||$path),
             $facs-requested:=starts-with($path,'/facs')
         return
             if ($facs-requested)
@@ -429,7 +432,8 @@ switch (true())
     ~:)
     case ($module = "projectAdmin" ) return
 (:        let $user := request:get-attribute($domain||".user"):)
-        let $path := config:resolve-template-to-uri($project-config-map, $rel-path)
+        let $log :=util:log-app("TRACE", $config:app-name, "projectAdmin module."),
+            $path := config:resolve-template-to-uri($project-config-map, $rel-path)
         return
             let $target := 
             	(: requests for xql endpoints (like store.xql) are passed on, 
@@ -490,12 +494,51 @@ switch (true())
                         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">   
                             <redirect url="/exist/{$exist:prefix}{$exist:controller}/{$project}/projectAdmin/start"/>
                         </dispatch>
-      
+    
+(:    (\:~ 
+     : FCS requests are forwarded to the FCS module. 
+    ~:\)
+    case (contains($exist:path, "fcs")) return    
+        let $log :=util:log-app("TRACE", $config:app-name, "FCS requests are forwarded to the FCS module.")
+        return
+        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+            <forward url="{$exist:controller}/modules/fcs/fcs.xql" >
+                <add-parameter name="project" value="{$project}"/>
+                <add-parameter name="exist-path" value="{$exist:path}"/>
+                <add-parameter name="exist-resource" value="{$exist:resource}"/>
+            </forward>
+    	</dispatch>
+
+    
+    (\:~
+     : AQAY Requests are forwarded to the aqay module: 
+    ~:\)
+    case (contains($exist:path, "aqay")) return
+        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+            <forward url="{$exist:controller}/modules/aqay/aqay.xql" >
+                <add-parameter name="project" value="{$project}"/>
+                <add-parameter name="exist-path" value="{$exist:path}"/>
+                <add-parameter name="exist-resource" value="{$exist:resource}"/>
+            </forward>
+        </dispatch>
+    (\:~
+     : Requests for specific resources are forwarded to the resource module: 
+    ~:\)
+    case (contains($exist:path, "resource")) return
+        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+            <forward url="{$exist:controller}/modules/resource/resource.xql" >
+                <add-parameter name="project" value="{$project}"/>
+                <add-parameter name="exist-path" value="{$exist:path}"/>
+                <add-parameter name="exist-resource" value="{$exist:resource}"/>
+            </forward>
+        </dispatch>    :)  
     (:~
      : Requests for a specific module are forwarded after having checked user authorization. 
     ~:)
     case (not($module='')) return
         (: TODO extend like $user-may :)
+        let $log :=util:log-app("TRACE", $config:app-name, "Requests for a specific module: "||$module||".")
+        return
         (if ($module-protected) 
         then 
             (: CHECK: $logout ?? :)
@@ -531,7 +574,8 @@ switch (true())
             let $corr-rel-path := if (starts-with($rel-path, "/"||$module)) 
                                   then substring-after($rel-path, "/"||$module) 
                                   else $rel-path
-            let $path := config:resolve-template-to-uri($project-config-map, $rel-path)
+            let $log :=util:log-app("TRACE", $config:app-name, "$rel-path: "||$rel-path||", "||"$corr-rel-path: "||$corr-rel-path),
+                $path := config:resolve-template-to-uri($project-config-map, $rel-path)
             return
             	let $target := $module||".xql"
             	let $url := $exist:controller||"/modules/"||$module||"/"||$target
@@ -553,42 +597,6 @@ switch (true())
             (: login :)
             else ()
         )
-
-    (:~ 
-     : FCS requests are forwarded to the FCS module. 
-    ~:)
-    case (contains($exist:path, "fcs")) return
-        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-            <forward url="{$exist:controller}/modules/fcs/fcs.xql" >
-                <add-parameter name="project" value="{$project}"/>
-                <add-parameter name="exist-path" value="{$exist:path}"/>
-                <add-parameter name="exist-resource" value="{$exist:resource}"/>
-            </forward>
-    	</dispatch>
-    
-    
-    (:~
-     : AQAY Requests are forwarded to the aqay module: 
-    ~:)
-    case (contains($exist:path, "aqay")) return
-        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-            <forward url="{$exist:controller}/modules/aqay/aqay.xql" >
-                <add-parameter name="project" value="{$project}"/>
-                <add-parameter name="exist-path" value="{$exist:path}"/>
-                <add-parameter name="exist-resource" value="{$exist:resource}"/>
-            </forward>
-        </dispatch>
-    (:~
-     : Requests for specific resources are forwarded to the resource module: 
-    ~:)
-    case (contains($exist:path, "resource")) return
-        <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-            <forward url="{$exist:controller}/modules/resource/resource.xql" >
-                <add-parameter name="project" value="{$project}"/>
-                <add-parameter name="exist-path" value="{$exist:path}"/>
-                <add-parameter name="exist-resource" value="{$exist:resource}"/>
-            </forward>
-        </dispatch>
     
 
    (: case (starts-with($rel-path, "/get")) return

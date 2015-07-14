@@ -11,6 +11,7 @@ import module namespace cqlparser = "http://exist-db.org/xquery/cqlparser";
 import module namespace repo-utils = "http://aac.ac.at/content_repository/utils" at "../../core/repo-utils.xqm";
 import module namespace diag =  "http://www.loc.gov/zing/srw/diagnostic/" at "../diagnostics/diagnostics.xqm";
 import module namespace index = "http://aac.ac.at/content_repository/index" at "../../core/index.xqm";
+import module namespace config="http://exist-db.org/xquery/apps/config" at "../../core/config.xqm";
 
 (:declare variable $cql:transform-doc := doc("XCQL2Xpath.xsl");:)
 declare variable $cql:transform-doc := doc(concat(system:get-module-load-path(),"/XCQL2Xpath.xsl"));
@@ -96,7 +97,8 @@ declare function cql:xcql-to-xpath ($xcql as node(), $context as xs:string, $map
 :)
 
 declare function cql:process-xcql($xcql as element(),$map) as xs:string {
-    let $return := 
+    let $log := util:log-app("TRACE", $config:app-name, "cql:process-xcql: $xcql = "||serialize($xcql)),
+        $return := 
         typeswitch ($xcql)
             case text() return normalize-space($xcql)
             case element(triple) return cql:boolean($xcql/boolean/value, $xcql/boolean/modifiers, $xcql/leftOperand, $xcql/rightOperand, $map)
@@ -131,7 +133,8 @@ declare function cql:boolean($value as element(value), $modifiers as element(mod
  };
 
 declare function cql:searchClause($clause as element(searchClause), $map) {
-    let $index-key := $clause//index/text(),        
+    let $log := util:log-app("TRACE", $config:app-name, "cql:searchClause: $clause = "||serialize($clause)),
+        $index-key := $clause//index/text(),        
         $index := index:index-from-map($index-key ,$map),
         $index-type := ($index/xs:string(@type),'')[1],
         $index-case := ($index/xs:string(@case),'')[1],
@@ -139,6 +142,7 @@ declare function cql:searchClause($clause as element(searchClause), $map) {
         $match-on := index:index-as-xpath-from-map($index-key,$map,'match-only'),         
         $relation := $clause/relation/value/text(),
         (: exact, starts-with, contains, ends-with :)
+        $logIndexCase := util:log-app("TRACE", $config:app-name, "cql:searchClause: $index-case = "||$index-case),
         $term := if ($index-case='yes') then $clause/term else lower-case($clause/term), 
         $sanitized-term := cql:sanitize-term($term),
 (:$predicate := ''        :)
