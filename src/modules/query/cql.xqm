@@ -12,7 +12,6 @@ import module namespace config = "http://exist-db.org/xquery/apps/config" at "..
 import module namespace repo-utils = "http://aac.ac.at/content_repository/utils" at "../../core/repo-utils.xqm";
 import module namespace diag =  "http://www.loc.gov/zing/srw/diagnostic/" at "../diagnostics/diagnostics.xqm";
 import module namespace index = "http://aac.ac.at/content_repository/index" at "../../core/index.xqm";
-import module namespace config="http://exist-db.org/xquery/apps/config" at "../../core/config.xqm";
 
 (:declare variable $cql:transform-doc := doc("XCQL2Xpath.xsl");:)
 declare variable $cql:transform-doc := doc(concat(system:get-module-load-path(),"/XCQL2Xpath.xsl"));
