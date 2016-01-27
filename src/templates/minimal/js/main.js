@@ -97,8 +97,7 @@ function minimal_template_ui_setup() {
     
     
     // refresh persistent link
-    $("a#persistent-link-invoke").live('hover', persistentLink);
-    $("a#persistent-link-invoke").live('click', persistentLink);
+    $("a#persistent-link").live('hover', persistentLink);
     
     
     // handle link to toggle info
@@ -112,8 +111,7 @@ function minimal_template_ui_setup() {
     // handle loading to main (scan -> search) (.content - to distinguish from .header .prev-next) 
     $("#navigation .load-main .content a").live('click', load_main);
     // paging in scan
-    //$("#navigation .scan .prev-next a").live('click', load_scan);
-    $("#navigation .scan a.internal").live('click', load_scan)
+    $("#navigation .scan .prev-next a").live('click', load_scan);
     
     //
     $("#navigation a.toc").live('click', load_toc);
@@ -175,9 +173,6 @@ function processParams () {
             load_detail_data(detail_request);
          }
          
-         if (cr_config.params["debug"]) {
-            $(".debug").show();
-            }
            
 }
 
@@ -194,10 +189,9 @@ function persistentLink() {
     
     $.extend((new URI()).query(true),
 cr_config.params)
-console.log("persistent-link:" + link);
     // FIXME: want to just set the location, but not reload page
     // window.location.href=link;
-    $("#persistent-link").val(link);
+    $("#persistent-link").attr("href",link);
     return link;    
 }
 
@@ -235,8 +229,7 @@ function load_explain(event) {
         $.get(targetRequest,function(data) {
                 target.append(data);
                 target.append("<div class='scan load-main' />");
-                //$(target).prepend("<span class='ui-icon ui-icon-close cmd_close' />");
-                $(target).prepend("<span class='fa fa-close' />");
+                $(target).prepend("<span class='ui-icon ui-icon-close cmd_close' />");
                 close_button = $(target).find(".cmd_close");
                 close_button.click(function() { target.find('.explain').toggle(); target.find('.scan').toggle(); });                
             }        
@@ -263,8 +256,7 @@ function load_scan(event) {
         target.show();
 /*       target.toggleClass("cmd_get");*/
        load_(target, targetRequest, function() {               
-                //$(target).prepend("<span class='ui-icon ui-icon-close cmd_close' />");
-                $(target).prepend("<span class='fa fa-close cmd_close' />");                
+                $(target).prepend("<span class='ui-icon ui-icon-close cmd_close' />");
                 close_button = $(target).find(".cmd_close");
                 close_button.click(function() { target.toggle(); });
                 customizeIcons();
@@ -342,13 +334,13 @@ function load_main(event) {
     cr_config.params["query"] = params["query"];
     
     // set the query into the query input field
-    $('#query').val(params["query"]);
+    $('#input-query').val(params["query"]);
     
     // Recreate the x-dataview param from scratch    
     params["x-dataview"] = cr_config.main.dataview; //,xmlescaped
     targetRequest = baseurl + '?' + $.param(params);
     
-    load_(target,targetRequest  + ' .result-header,.result-body', customizeIcons );
+    load_(target,targetRequest, customizeIcons );
 }
 
 function toggle_info(event) {
@@ -560,9 +552,8 @@ function load_in_context_details(event) {
 }
 
 function customizeIcons () {
-    $('.cmd_prev, .cmd_next, .navigation .prev, .navigation .next').html(""); 
-    $('.cmd_prev, .navigation .prev').addClass("fa fa-chevron-left").removeClass("cmd prev cmd_prev");
-    $('.cmd_next, .navigation .next').addClass("fa fa-chevron-right").removeClass("cmd next cmd_next");;
+    $('.cmd_prev, .navigation .prev').addClass("ui-icon ui-icon-circle-triangle-w").removeClass("cmd prev cmd_prev");
+    $('.cmd_next, .navigation .next').addClass("ui-icon ui-icon-circle-triangle-e").removeClass("cmd next cmd_next");;
 }
 
 function loading(targetContainer, startstop) {
