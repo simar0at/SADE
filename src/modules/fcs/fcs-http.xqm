@@ -29,8 +29,12 @@ declare function fcs-http:explain($x-context as xs:string*, $config, $context-ma
 };
 
 declare function fcs-http:get-result-or-diag($url as xs:anyURI) as item()+ {
-   let $log := (util:log-app("DEBUG", $config:app-name, "get-result-or-diag http: GET: "||$url)),
-       $response := try {httpclient:get($url, false(), ())} catch * {
+   let $log := (util:log-app("DEBUG", $config:app-name, "get-result-or-diag http: GET: "||$url)), 
+       $userPWSearch := '^(https?://)([^:@]+?:[^:@]+?)@(.*)$',
+       $urlWithoutUserPW := replace($url, $userPWSearch, '$1$3'),
+       $userPW := if ($url != $urlWithoutUserPW) then tokenize(replace($url, $userPWSearch, '$2'), ':') else (),
+       $log2 := (util:log-app("TRAGE", $config:app-name, "get-result-or-diag http: $urlWithoutUserPW := "||$urlWithoutUserPW||" $userPW := "||string-join($userPW, ':'))),
+       $response := try {httpclient:get($urlWithoutUserPW, false(), fcs-http:get-basic-auth-headers($userPW))} catch * {
        <hc:response statusCode="500">
          <hc:headers>
            <hc:header name="Content-Type" value="text/plain; charset=iso-8859-1"/>
@@ -39,18 +43,31 @@ declare function fcs-http:get-result-or-diag($url as xs:anyURI) as item()+ {
            {$err:code}: {$err:description}
          </hc:body>
        </hc:response>},
-       $logResp := (util:log-app("DEBUG", $config:app-name, "get-result-or-diag http: $response statusCode:"||$response/@statusCode),
+       $logResp := (util:log-app("TRACE", $config:app-name, "get-result-or-diag http: $response statusCode:"||$response/@statusCode),
                     util:log-app("TRACE", $config:app-name, "get-result-or-diag http: $response type:"||$response/hc:body/@type))
-   return
+   let $ret :=
       if ($response/@statusCode != 200) then
         diag:diagnostics('general-error', ("&#10;GET: ", $url, "&#10;", util:serialize($response, ())))
-      else if ($response/hc:body/@mimetype != 'application/xml' and 
-               $response/hc:body/@mimetype != 'text/xml; charset=UTF-8') then
+      else if (lower-case($response/hc:body/@mimetype) != 'application/xml' and 
+               lower-case($response/hc:body/@mimetype) != 'text/xml; charset=UTF-8') then
         diag:diagnostics('general-error', ("&#10;GET: ", $url, "&#10;", util:serialize($response, ())))
-      else if ($response/hc:body/@encoding = 'Base64Encoded') then
+      else if (lower-case($response/hc:body/@encoding) = 'base64encoded') then
         util:base64-decode($response/hc:body/text())
       else 
-        $response/hc:body/*
+        $response/hc:body/*,
+       $retLog := util:log-app("DEBUG", $config:app-name, "get-result-or-diag http: return: "||substring(serialize($ret), 1, 1000))      
+   return $ret
+};
+
+(: Create the HTTP basic authentication header if user credentials available :)
+declare function fcs-http:get-basic-auth-headers($credentials as xs:string*) {
+  if (empty($credentials)) then ()
+  else
+    let $auth := concat('Basic ', util:string-to-binary(concat($credentials[1], ':', $credentials[2])))
+    return
+      <headers>
+        <header name="Authorization" value="{$auth}"/>
+      </headers>
 };
 
 
