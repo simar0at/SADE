@@ -798,9 +798,11 @@ let (:$log := util:log-app("TRACE", $config:app-name, 'config:project-config $pr
       $objid := ($project, if (exists($resourceProjectMap)) then $resourceProjectMap("project-pid") else ()),      
       $project_ := collection(config:path("projects"))//mets:mets[@OBJID eq $objid]
       return if (count($project_) gt 1) then 
-                   let $log:=(util:log-app("WARN",$config:app-name, "project-id corruption: found more than 1 project with id "||$project||"."),for $p in $project return base-uri($p))
+               let $log:=(util:log-app("WARN",$config:app-name, "project-id corruption: found more than 1 project with id "||$project||"."),for $p in $project return base-uri($p))
                    return $project_[1]
-               else $project_
+            else $project_,
+    $logRet := util:log-app("DEBUG", $config:app-name, 'config:project-config return '||substring(serialize($ret), 1, 100))
+return $ret
     (:$logRet := util:log-app("TRACE", $config:app-name, 'config:project-config return '||substring(serialize($ret), 1, 100)):)
 return $ret
 };
