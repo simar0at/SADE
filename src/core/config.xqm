@@ -730,19 +730,16 @@ declare function config:config-map($project as xs:string) as item()* {
  : @return config element with relevant parameters.
  :)
 declare function config:project-config($project as xs:string) as element()* {
-    if ($project instance of element(mets:mets)) then $project
-    else
-        if ($project instance of map()) then $project("config")[self::mets:mets]
-        else
-        (: also try to get it out of the mixed config-sequence: :)
-           if (exists($project[. instance of element(mets:mets)])) then $project[. instance of element(mets:mets)]
-           else 
-               let $project_ := collection(config:path("projects"))//mets:mets[@OBJID eq $project]    
-               return
-               if (count($project_) gt 1) then 
-                   let $log:=(util:log-app("WARN",$config:app-name, "project-id corruption: found more than 1 project with id "||$project||"."),for $p in $project return base-uri($p))
+let $resourceProjectMap := repo-utils:context-to-resource-pid($project),
+    $objid := ($project, if (exists($resourceProjectMap)) then $resourceProjectMap("project-pid") else ()),
+    $log := util:log-app("DEBUG", $config:app-name, 'config:project-config $project := '||$project), 
+    $project_ := collection(config:path("projects"))//mets:mets[@OBJID eq $objid],    
+    $ret := if (count($project_) gt 1) then 
+               let $log:=(util:log-app("WARN",$config:app-name, "project-id corruption: found more than 1 project with id "||$project||"."),for $p in $project return base-uri($p))
                    return $project_[1]
-               else $project_
+            else $project_,
+    $logRet := util:log-app("DEBUG", $config:app-name, 'config:project-config return '||substring(serialize($ret), 1, 100))
+return $ret
 };
 
 
