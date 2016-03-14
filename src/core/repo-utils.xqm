@@ -820,34 +820,35 @@ declare function repo-utils:get-record($reference) as element()? {
 
 
 declare function repo-utils:get-record-pid($reference-param) as xs:string? {
+(:Note: logging here is extremly costly. :)
     for $reference in $reference-param return 
     typeswitch($reference)
-        case xs:string return 
-            let $log := util:log-app("DEBUG",$config:app-name,"$reference is xs:string '"||$reference||"'.")
+        case xs:string(: return 
+            let $log := util:log-app("TRACE",$config:app-name,"$reference is xs:string '"||$reference||"'."):)
             return $reference
         
-        case text() return 
-            let $log := util:log-app("DEBUG",$config:app-name,"$reference is text() '"||$reference||"'.")
+        case text()(: return 
+            let $log := util:log-app("TRACE",$config:app-name,"$reference is text() '"||$reference||"'."):)
             return $reference
         
-        case attribute(OBJID) return 
-            let $log := util:log-app("DEBUG",$config:app-name,"$reference is @OBJID '"||$reference||"'.")
+        case attribute(OBJID)(: return 
+            let $log := util:log-app("TRACE",$config:app-name,"$reference is @OBJID '"||$reference||"'."):)
             return $reference/parent::mets:mets/xs:string(@OBJID)
         
-        case attribute(ID) return 
-            let $log := util:log-app("DEBUG",$config:app-name,"$reference is @ID '"||$reference||"'.")
+        case attribute(ID)(: return 
+            let $log := util:log-app("TRACE",$config:app-name,"$reference is @ID '"||$reference||"'."):)
             return $reference/parent::mets:div/xs:string(@ID)
         
-        case element(mets:mets) return 
-            let $log := util:log-app("DEBUG",$config:app-name,"$reference is <mets:mets OBJID='"||$reference/@OBJID||"'/>.")
+        case element(mets:mets)(: return 
+            let $log := util:log-app("TRACE",$config:app-name,"$reference is <mets:mets OBJID='"||$reference/@OBJID||"'/>."):)
                 return $reference/xs:string(@OBJID)
                 
-        case element(mets:div) return
-            let $log := util:log-app("DEBUG",$config:app-name,"$reference is <mets:div ID='"||$reference/@  ID||"'/>.")
+        case element(mets:div)(: return
+            let $log := util:log-app("TRACE",$config:app-name,"$reference is <mets:div ID='"||$reference/@  ID||"'/>."):)
             return $reference/xs:string(@ID)
             
-        case document-node() return 
-            let $log := util:log-app("DEBUG",$config:app-name,"$reference is document-node()/"||$reference/local-name(*)||".")
+        case document-node()(: return 
+            let $log := util:log-app("TRACE",$config:app-name,"$reference is document-node()/"||$reference/local-name(*)||"."):)
             return ($reference/mets:mets/xs:string(@OBJID),$reference/mets:div/xs:string(@ID))[1]
         
         default return ()
@@ -861,35 +862,36 @@ declare function repo-utils:get-record-pid($reference-param) as xs:string? {
  : @param $reference any item with relation to a resource or a mets record (elements like mets:div, mets:mets, PIDs, document-nodes etc.)
 :)
 declare function repo-utils:get-record($reference-param) as element()? {
+(:Note: logging here is extremly costly. :)
     let $references-resolved := 
         for $reference in $reference-param return  
         typeswitch($reference)
-            case xs:string return 
-                let $log := util:log-app("DEBUG",$config:app-name,"$reference is xs:string '"||$reference||"'.")
+            case xs:string(: return 
+                let $log := util:log-app("TRACE",$config:app-name,"$reference is xs:string '"||$reference||"'."):)
                 return (project:get($reference),collection(config:path("projects"))//mets:div[@ID = $reference])[1]
                 
-            case text() return 
-                let $log := util:log-app("DEBUG",$config:app-name,"$reference is text() '"||$reference||"'.")
+            case text()(: return 
+                let $log := util:log-app("TRACE",$config:app-name,"$reference is text() '"||$reference||"'."):)
                 return (project:get($reference),collection(config:path("projects"))//mets:div[@ID = $reference])[1]
                 
-            case attribute(OBJID) return 
-                let $log := util:log-app("DEBUG",$config:app-name,"$reference is @OBJID '"||$reference||"'.")
+            case attribute(OBJID)(: return 
+                let $log := util:log-app("TRACE",$config:app-name,"$reference is @OBJID '"||$reference||"'."):)
                 return project:get($reference)
                 
-            case attribute(ID) return 
-                let $log := util:log-app("DEBUG",$config:app-name,"$reference is @ID '"||$reference||"'.")
+            case attribute(ID)(: return 
+                let $log := util:log-app("TRACE",$config:app-name,"$reference is @ID '"||$reference||"'."):)
                 return collection(config:path("projects"))//mets:div[@ID = $reference]
                 
-            case element(mets:mets) return 
-                let $log := util:log-app("DEBUG",$config:app-name,"$reference is <mets:mets OBJID='"||$reference/@OBJID||"'/>.")
+            case element(mets:mets)(: return 
+                let $log := util:log-app("TRACE",$config:app-name,"$reference is <mets:mets OBJID='"||$reference/@OBJID||"'/>."):)
                 return $reference
                 
-            case element(mets:div) return 
-                let $log := util:log-app("DEBUG",$config:app-name,"$reference is <mets:div ID='"||$reference/@  ID||"'/>.")
+            case element(mets:div)(: return 
+                let $log := util:log-app("TRACE",$config:app-name,"$reference is <mets:div ID='"||$reference/@  ID||"'/>."):)
                 return $reference
             
-            case document-node() return 
-                let $log := util:log-app("DEBUG",$config:app-name,"$reference is document-node()/"||$reference/local-name(*)||".")
+            case document-node()(: return 
+                let $log := util:log-app("TRACE",$config:app-name,"$reference is document-node()/"||$reference/local-name(*)||"."):)
                 return ($reference/mets:mets,$reference/mets:div)[1]
             
             default return ()

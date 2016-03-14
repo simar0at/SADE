@@ -730,15 +730,23 @@ declare function config:config-map($project as xs:string) as item()* {
  : @return config element with relevant parameters.
  :)
 declare function config:project-config($project as xs:string) as element()* {
-let $resourceProjectMap := repo-utils:context-to-resource-pid($project),
-    $objid := ($project, if (exists($resourceProjectMap)) then $resourceProjectMap("project-pid") else ()),
-    $log := util:log-app("DEBUG", $config:app-name, 'config:project-config $project := '||$project), 
-    $project_ := collection(config:path("projects"))//mets:mets[@OBJID eq $objid],    
-    $ret := if (count($project_) gt 1) then 
+(:Note: logging here is extremly costly. :)
+let (:$log := util:log-app("TRACE", $config:app-name, 'config:project-config $project := '||$project),:)
+    $project_ := collection(config:path("projects"))//mets:mets[@OBJID eq $project],    
+    $try1 := if (count($project_) gt 1) then 
                let $log:=(util:log-app("WARN",$config:app-name, "project-id corruption: found more than 1 project with id "||$project||"."),for $p in $project return base-uri($p))
                    return $project_[1]
             else $project_,
-    $logRet := util:log-app("DEBUG", $config:app-name, 'config:project-config return '||substring(serialize($ret), 1, 100))
+    $ret := if (exists($try1)) then $try1
+      else
+      let $resourceProjectMap := repo-utils:context-to-resource-pid($project),
+      $objid := ($project, if (exists($resourceProjectMap)) then $resourceProjectMap("project-pid") else ()),      
+      $project_ := collection(config:path("projects"))//mets:mets[@OBJID eq $objid]
+      return if (count($project_) gt 1) then 
+               let $log:=(util:log-app("WARN",$config:app-name, "project-id corruption: found more than 1 project with id "||$project||"."),for $p in $project return base-uri($p))
+                   return $project_[1]
+            else $project_
+    (:$logRet := util:log-app("TRACE", $config:app-name, 'config:project-config return '||substring(serialize($ret), 1, 100)):)
 return $ret
 };
 
@@ -755,7 +763,8 @@ return $ret
  : @result: one or more <map> elements 
  ~:)
 declare function config:mappings($config as item()*) as element(map)* {
-    let $log := util:log-app("TRACE", $config:app-name, 'config:mappings $config := '||string-join(for $c in $config return substring(serialize($c),1,80), '... ,&#xa;')),
+(:Note: logging here is extremly costly. :)
+    let (:$log := util:log-app("TRACE", $config:app-name, 'config:mappings $config := '||string-join(for $c in $config return substring(serialize($c),1,40), '... ,&#xa;')),:)
         $ret := for $item in $config return 
         let $mappings := typeswitch ($item)
             case map()          return 
@@ -766,8 +775,8 @@ declare function config:mappings($config as item()*) as element(map)* {
             case text()         return config:project-config($item)//mets:techMD[@ID=$config:PROJECT_MAPPINGS_ID]
             case element()      return $item//mets:techMD[@ID=$config:PROJECT_MAPPINGS_ID]
             default             return ()              
-         return ($mappings/mets:mdWrap[1]/mets:xmlData/map,doc($mappings/mets:mdRef/@xlink:href)/map,/map)[1],
-        $logRet := util:log-app("TRACE", $config:app-name, 'config:mappings return '||string-join(for $r in $ret return substring(serialize($r),1,80), '... ,&#xa;'))
+         return ($mappings/mets:mdWrap[1]/mets:xmlData/map,doc($mappings/mets:mdRef/@xlink:href)/map,/map)[1]
+        (:$logRet := util:log-app("TRACE", $config:app-name, 'config:mappings return '||string-join(for $r in $ret return substring(serialize($r),1,40), '... ,&#xa;')):)
     return $ret
 };
 

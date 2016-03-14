@@ -70,7 +70,7 @@ function app:info ($node as node(), $model as map(*), $key, $x-format) {
 
     let $val := config:param-value($model, $key),
         $log := (util:log-app("DEBUG",$config:app-name,"app:info $key = "||$key),
-                 util:log-app("TRACE",$config:app-name,"app:info $val = "||serialize($val)))
+                 util:log-app("TRACE",$config:app-name,"app:info $val = "||substring(serialize($val),1,100)))
     
     let $ret := 
         if (contains($x-format,'html')) then
