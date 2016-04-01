@@ -163,6 +163,7 @@ declare function facs:get-url($resourcefragment-pid as xs:string, $resource-pid 
  : in the version / quality specified in the first function parameter. 
 ~:)
 declare function facs:get-url($version-param as xs:string?, $resourcefragment-pid as xs:string, $resource-pid as xs:string, $project-pid as xs:string) as xs:anyURI* {
+    let $log := util:log-app("DEBUG",$config:app-name,"facs:get-url $resourcefragment-pid := "||$resourcefragment-pid||" $resource-pid := "||$resource-pid||" $project-pid := "||$project-pid) 
     let $version := ($version-param,config:param-value(project:get($project-pid),'facs.version'),$facs:default-version)[.!=''][1]
     let $file := facs:get-file($resourcefragment-pid,$resource-pid,$project-pid),
         $global-imgFileGrp := facs:get-fileGrp($project-pid)
@@ -229,7 +230,7 @@ declare function facs:generate($resource-pid as xs:string, $project-pid as xs:st
  : @param $project-pid the pid of the project
 ~:)
 declare function facs:generate($version-param as xs:string?, $resource-pid as xs:string, $project-pid as xs:string) as empty() {
-    let $log := util:log-app("DEBUG",$config:app-name,"facs:generate $version-param := "||$version-param||" $resource-pid := "||$resource-pid||" $project-pid := "||$project-pid)
+    let $log := util:log-app("TRACE",$config:app-name,"facs:generate $version-param := "||$version-param||" $resource-pid := "||$resource-pid||" $project-pid := "||$project-pid)
     let $fragments := resource:get($resource-pid, $project-pid)/mets:div[@TYPE=$config:PROJECT_RESOURCEFRAGMENT_DIV_TYPE],
         $version := ($version-param,config:param-value(project:get($project-pid),'facs.version'),$facs:default-version)[.!=''][1]
     (: we generate the first fragment outside of the for-in expression in order to make 
@@ -285,7 +286,7 @@ declare %private function facs:id-by-resourcefragment($resourcefragment-pid as x
     (: ... then apply the "facs" index to the fragment-element in the working copy :)
     let $log := util:log-app("TRACE",$config:app-name,"$fragment-in-wc := "||serialize($fragment-in-wc))
     let $facs:= index:apply-index($fragment-in-wc,"facs",$project-pid)
-    let $return := $facs/xs:string(.)
+    let $return := data($facs)
     let $log := util:log-app("TRACE",$config:app-name,"facs:id-by-resourcefragment return "||$return)
     return $return
 };
