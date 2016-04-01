@@ -132,13 +132,13 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
       (: keyword 'text' and 'size', otherwise fall back on index map definitions :)
     $sort := if ($p-sort eq $fcs:scanSortText or $p-sort eq $fcs:scanSortSize) then $p-sort else ()	
 	 
-	 let $sanitized-xcontext := repo-utils:sanitize-name($x-context) 
+	 let $sanitized-xcontext := repo-utils:sanitize-name($x-context)
 	 let $project-id := if (config:project-exists($x-context)) then $x-context else cr:resolve-id-to-project-pid($x-context)
     let $index-doc-name := repo-utils:gen-cache-id("index", ($sanitized-xcontext, $index-name, $sort, $max-depth)),
         $dummy2 := util:log-app("DEBUG", $config:app-name, "fcs:scan: is in cache: "||repo-utils:is-in-cache($index-doc-name, $config) ),
       $log := (util:log-app("DEBUG", $config:app-name, "cache-mode: "||$mode),
                util:log-app("DEBUG", $config:app-name, "scan-clause="||$scan-clause||": index: "||$index-name||"start term: "||$start-term),
-               util:log-app("DEBUG", $config:app-name, "x-context="||$x-context),
+               util:log-app("DEBUG", $config:app-name, "x-context="||$x-context||" $sanitized-xcontext="||$sanitized-xcontext),
                util:log-app("DEBUG", $config:app-name, "x-filter="||$x-filter),
                util:log-app("DEBUG", $config:app-name, "max-terms="||$max-terms),
                util:log-app("DEBUG", $config:app-name, "max-depth="||$max-depth),
