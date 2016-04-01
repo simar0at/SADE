@@ -49,7 +49,7 @@ declare function fcs-http:get-result-or-diag($url as xs:anyURI) as item()+ {
       if ($response/@statusCode != 200) then
         diag:diagnostics('general-error', ("&#10;GET: ", $url, "&#10;", util:serialize($response, ())))
       else if (lower-case($response/hc:body/@mimetype) != 'application/xml' and 
-               lower-case($response/hc:body/@mimetype) != 'text/xml; charset=UTF-8') then
+               lower-case($response/hc:body/@mimetype) != 'text/xml; charset=utf-8') then
         diag:diagnostics('general-error', ("&#10;GET: ", $url, "&#10;", util:serialize($response, ())))
       else if (lower-case($response/hc:body/@encoding) = 'base64encoded') then
         util:base64-decode($response/hc:body/text())

@@ -17,6 +17,8 @@ declare variable $fcs:defaultMaxRecords := 10;declare variable $fcs:scanSortText
 declare variable $fcs:scanSortSize as xs:string := "size";
 declare variable $fcs:scanSortDefault := $fcs:scanSortText;
 
+import module namespace functx = "http://www.functx.com";
+import module namespace request="http://exist-db.org/xquery/request";
 import module namespace diag = "http://www.loc.gov/zing/srw/diagnostic/" at  "../diagnostics/diagnostics.xqm";
 import module namespace repo-utils = "http://aac.ac.at/content_repository/utils" at "../../core/repo-utils.xqm";
 import module namespace index="http://aac.ac.at/content_repository/index" at "../../core/index.xqm";
@@ -128,14 +130,21 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
  	  $start-term:= ($scx[2],'')[1],	 
       (: precedence of sort parameter: 1) user input (via $sort), 2) index map definition @sort in <index>, 3) fallback = 'text' via $fcs:scanSortText :)
       (: keyword 'text' and 'size', otherwise fall back on index map definitions :)
-      $sort := if ($p-sort eq $fcs:scanSortText or $p-sort eq $fcs:scanSortSize) then $p-sort else (),
+    $sort := if ($p-sort eq $fcs:scanSortText or $p-sort eq $fcs:scanSortSize) then $p-sort else ()	
+	 
+	 let $sanitized-xcontext := repo-utils:sanitize-name($x-context)
+	 let $project-id := if (config:project-exists($x-context)) then $x-context else cr:resolve-id-to-project-pid($x-context)
+    let $index-doc-name := repo-utils:gen-cache-id("index", ($sanitized-xcontext, $index-name, $sort, $max-depth)),
+        $dummy2 := util:log-app("DEBUG", $config:app-name, "fcs:scan: is in cache: "||repo-utils:is-in-cache($index-doc-name, $config) ),
       $log := (util:log-app("DEBUG", $config:app-name, "cache-mode: "||$mode),
                util:log-app("DEBUG", $config:app-name, "scan-clause="||$scan-clause||": index: "||$index-name||"start term: "||$start-term),
-               util:log-app("DEBUG", $config:app-name, "x-context="||$x-context),
+               util:log-app("DEBUG", $config:app-name, "x-context="||$x-context||" $sanitized-xcontext="||$sanitized-xcontext),
                util:log-app("DEBUG", $config:app-name, "x-filter="||$x-filter),
                util:log-app("DEBUG", $config:app-name, "max-terms="||$max-terms),
                util:log-app("DEBUG", $config:app-name, "max-depth="||$max-depth),
-               util:log-app("DEBUG", $config:app-name, "sort="||($sort,'no user input (falling back to @sort on <index> map definition)')[1])
+                util:log-app("DEBUG", $config:app-name, "p-sort="||($p-sort,'no user input (falling back to @sort on <index> map definition)')[1]),
+                util:log-app("DEBUG", $config:app-name, "$index-name="||$index-name),
+                util:log-app("DEBUG", $config:app-name, "$start-term="||($start-term, "no start term given")[1])
       ),
       $context-mapping := index:map($x-context),
       $sort-or-default := ($sort, $context-mapping//index[@key = $index-name]/@sort)[1],

@@ -1041,6 +1041,18 @@ declare function fcs-db:format-record-data($orig-sequence-record-data as node(),
                                 let $facs-uri := facs:get-url($resourcefragment-pid, $resource-pid, $project-id)
         				        return <fcs:DataView type="facs" ref="{$facs-uri[1]}"/>
         				    else ()
+        let $dv-facs-prev := if (($rf-window gt 1) and contains($data-view,'facs') and contains($data-view,'full')) 
+                            then 
+                            for $rfp in reverse(subsequence(reverse($rf-entry/preceding-sibling::mets:div[@TYPE = $config:PROJECT_RESOURCEFRAGMENT_DIV_TYPE]),1,$rf-window))
+                                let $facs-uri := facs:get-url($rfp/@ID, $resource-pid, $project-id)
+        				        return <fcs:DataView type="facs" ref="{$facs-uri[1]}"/>
+        				    else ()
+                                
+        let $dv-facs-next := if (($rf-window gt 1) and contains($data-view,'facs') and contains($data-view,'full')) 
+                            then for $rfp in subsequence($rf-entry/following-sibling::mets:div[@TYPE = $config:PROJECT_RESOURCEFRAGMENT_DIV_TYPE],1,$rf-window)
+                                let $facs-uri := facs:get-url($rfp/@ID, $resource-pid, $project-id)
+        				        return <fcs:DataView type="facs" ref="{$facs-uri[1]}"/>
+        				    else ()
                          
         let $dv-title := let $title_ := if (exists($title) and not($title='')) then $title else $res-entry/data(@LABEL)||", "||$rf-entry/data(@LABEL) 
         
@@ -1080,7 +1092,9 @@ declare function fcs-db:format-record-data($orig-sequence-record-data as node(),
                                             case "full"         return (if ($rf-window gt 1) then $rf-window-prev else (),
                                                                        $record-data[1]/*,
                                                                        if ($rf-window gt 1) then $rf-window-next else ())
-                                            case "facs"         return $dv-facs
+                                            case "facs"         return (if ($rf-window gt 1) then $dv-facs-prev else (),
+                                                                       $dv-facs,
+                                                                       if ($rf-window gt 1) then $dv-facs-next else ())
                                             case "title"        return $dv-title
                                             case "cite"        return $dv-cite
                                             case "kwic"         return $kwic
