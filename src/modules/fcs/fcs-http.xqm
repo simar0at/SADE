@@ -19,7 +19,7 @@ module namespace fcs-http = "http://clarin.eu/fcs/1.0/http";
 declare namespace fcs = "http://clarin.eu/fcs/1.0";
 
 import module namespace config="http://exist-db.org/xquery/apps/config" at "../../core/config.xqm";
-import module namespace hc = "http://exist-db.org/xquery/httpclient";
+(:import module namespace hc = "http://exist-db.org/xquery/httpclient"; -> error in exist-db 3.0:)
 import module namespace diag =  "http://www.loc.gov/zing/srw/diagnostic/" at  "../diagnostics/diagnostics.xqm";
 
 declare function fcs-http:explain($x-context as xs:string*, $config, $context-mappings as item()+) as item()+ {
