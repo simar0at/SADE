@@ -17,7 +17,6 @@ xquery version "3.0";
 module namespace fcs-db = "http://clarin.eu/fcs/1.0/db";
  
 declare namespace fcs = "http://clarin.eu/fcs/1.0";
-declare namespace err = "http://www.w3.org/2005/xqt-errors";
 declare namespace sru = "http://www.loc.gov/zing/srw/";
 declare namespace zr = "http://explain.z3950.org/dtd/2.0/";
 declare namespace tei = "http://www.tei-c.org/ns/1.0";
