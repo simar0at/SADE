@@ -657,7 +657,7 @@ declare function config:param-value($node as node()*, $model, $module-key as xs:
                                                                           try {
                                                                               if (sm:group-exists($g)) then
                                                                                  sm:get-group-members($g)
-                                                                            else ()
+                                                                              else ()
                                                                           } catch * {
                                                                                let $log := util:log-app("TRACE",$config:app-name,"config:param-value users $group-members exception "||$err:code||": "||$err:description),
                                                                                    $ret := if ($g = $id//sm:group) then $id//sm:username else (),
@@ -793,7 +793,7 @@ let (:$log := util:log-app("TRACE", $config:app-name, 'config:project-config $pr
                    return $project_[1]
             else $project_,
     $ret := if (exists($try1)) then $try1
-    else
+      else
       let $resourceProjectMap := repo-utils:context-to-resource-pid($project),
       $objid := ($project, if (exists($resourceProjectMap)) then $resourceProjectMap("project-pid") else ()),      
       $project_ := collection(config:path("projects"))//mets:mets[@OBJID eq $objid]
