@@ -657,7 +657,7 @@ declare function config:param-value($node as node()*, $model, $module-key as xs:
                                                                           try {
                                                                               if (sm:group-exists($g)) then
                                                                                  sm:get-group-members($g)
-                                                                              else ()
+                                                                            else ()
                                                                           } catch * {
                                                                                let $log := util:log-app("TRACE",$config:app-name,"config:param-value users $group-members exception "||$err:code||": "||$err:description),
                                                                                    $ret := if ($g = $id//sm:group) then $id//sm:username else (),
