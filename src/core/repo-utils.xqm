@@ -725,7 +725,7 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
 	                             let $log := util:log-app("ERROR", $config:app-name, "repo-utils:serialise-as transform:transform failed! $item := "||substring(serialize($item), 1, 500000))
 	                             return diag:diagnostics("general-error", "transform:transform failed! "||$err:code||": "||$err:description||" "||$err:additional)
 	                          }
-	                       else 
+	                   else 
 	                       let $log:=util:log-app("ERROR", $config:app-name, "repo-utils:serialise-as() could not find stylesheet '"||$xslDoc||"' for $operation: "||$operation||", $format: "||$format||".")
 	                       return diag:diagnostics("unsupported-param-value",concat('$operation: ', $operation, ', $format: ', $format))
 	       let $option := util:declare-option("exist:serialize", "method=xhtml media-type=text/html"),
