@@ -261,7 +261,7 @@ declare function repo-utils:parse-x-context($x-context as xs:string, $config) as
             return 
                 if ($type)
                 then
-                    let $log := util:log-app("DEBUG",$config:app-name,"parsing x-context '"||$x-context||"' part #"||$pos||" - id: '"||$c-id||"', "||"type: '"||$type||"', operand: '"||$operand||"'")
+                    let $log := util:log-app("TRACE",$config:app-name,"parsing x-context '"||$x-context||"' part #"||$pos||" - id: '"||$c-id||"', "||"type: '"||$type||"', operand: '"||$operand||"'")
                     return 
                     map:new((
                         map:entry("operand",$operand),
@@ -289,7 +289,7 @@ declare function repo-utils:context-map-to-data($x-context as map()*, $config) a
         for $p at $pos in $x-context  
         let $type := map:get($p,'type'),
             $operand := if ($pos=1) then () else " "||map:get($p,'operand')||" "
-        let $log := util:log-app("DEBUG",$config:app-name,"repo-utils:context-map-to-data: $type: '"||$type||"' $operand: '"||$operand||"'")
+        let $log := util:log-app("TRACE",$config:app-name,"repo-utils:context-map-to-data: $type: '"||$type||"' $operand: '"||$operand||"'")
         let $path := 
             switch ($type)
                     case "project" return $operand||"collection('"||project:path($p("project-pid"),"workingcopy")||"')"
@@ -297,7 +297,7 @@ declare function repo-utils:context-map-to-data($x-context as map()*, $config) a
                     case "resourcefragment" return " union doc('"||resource:path($p("resource-pid"),$p("project-pid"),'workingcopy')||"')"
                     default return ()
         return $path
-    let $log := util:log-app("DEBUG",$config:app-name,"repo-utils:context-map-to-data: constructed data path: "||string-join($path-expressions,''))        
+    let $log := util:log-app("TRACE",$config:app-name,"repo-utils:context-map-to-data: constructed data path: "||string-join($path-expressions,''))        
     let $data := util:eval(string-join($path-expressions,''))
     return $data 
 };

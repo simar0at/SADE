@@ -172,7 +172,10 @@ declare variable $config:RESOURCEFRAGMENT_PID_NAME:="resourcefragment-pid";
 declare variable $config:RESOURCEFRAGMENT_LABEL_NAME:="rf-label";
 
 declare variable $config:INDEX_RESOURCEFRAGMENT_DELIMITER:="rf";
+declare variable $config:INDEX_INTERNAL_PREFIX:="fcs.";
 declare variable $config:INDEX_INTERNAL_RESOURCEFRAGMENT:="fcs.rf";
+declare variable $config:INDEX_INTERNAL_RESOURCE:="fcs.resource";
+declare variable $config:INDEX_INTERNAL_TOC:="fcs.toc";
 
 (:~
  : Prefixes to prepend to the filename of a resource, when storing working copies, 
@@ -632,7 +635,7 @@ declare function config:param-value($node as node()*, $model, $module-key as xs:
                                                     $groups:=       $ace[@target='GROUP']/@who,
                                                     $logAce :=      util:log-app("TRACE",$config:app-name,"config:param-value users $ace := "||substring(serialize($ace), 1, 240)),
                                                     $id :=          sm:id(),
-                                                    $logId :=       util:log-app("TRACE",$config:app-name,"config:param-value users $id := "||substring(serialize($id), 1, 240)),
+                                                    $logId :=       util:log-app("TRACE",$config:app-name,"config:param-value users $id := "||substring(serialize($id), 1, 800)),
                                                     $group-members:=
                                                        for $g in $groups
                                                                     return
