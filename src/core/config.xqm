@@ -380,12 +380,16 @@ declare function config:resolve-to-dbpath($model as map(*), $relPath as xs:strin
  : </ol> 
 ~:)
 declare function config:resolve-template-to-uri($model as map(*), $relPath as xs:string) as xs:anyURI {
+    config:resolve-template-to-uri($model, $relPath, true())
+};
+
+declare function config:resolve-template-to-uri($model as map(*), $relPath as xs:string, $look-in-project-data-dir as xs:boolean) as xs:anyURI {
     let $project-template-dir := config:param-value($model, 'project-template-dir'),
         $project-template-baseuri:= config:param-value($model, 'project-template-baseuri'),
         $project-static-dir := config:param-value($model, 'project-static-dir'),
         $project-static-baseuri:= config:param-value($model, 'project-static-baseuri'),
-        $project-data-dir := config:param-value($model, 'project-data-dir'),
-        $project-data-baseuri:= config:param-value($model, 'project-data-baseuri'),
+        $project-data-dir := if ($look-in-project-data-dir) then config:param-value($model, 'project-data-dir') else (),
+        $project-data-baseuri:= if ($look-in-project-data-dir) then config:param-value($model, 'project-data-baseuri') else (),
         $template-dir := config:param-value($model, 'template-dir'),
         $template-baseuri := config:param-value($model, 'template-baseuri')
     let $dirs:=(    $project-template-dir||$relPath,
@@ -708,7 +712,9 @@ declare function config:param-value($node as node()*, $model, $module-key as xs:
  : @result returns a path common to all project data files or the empty sequence if there's no common path. 
 ~:)
 declare function config:common-path-from-FLocat($model as map(*), $fileGrpID as xs:string) as xs:string? {
-    let $config:=   $model("config"),
+    let $log := util:log-app("ERROR", $config:app-name, "config:common-path-from-FLocat: This function needs to be refactored! It does not scale with more registered resources!"),
+        $fail-for-debugging := if (false()) then error(xs:QName('config:die-FLocat')) else (),
+        $config:=   $model("config"),
         $data:=     $config//mets:fileGrp[@ID=$fileGrpID]//mets:FLocat/xs:string(@xlink:href)
     
     let $tokenized:=for $d in $data return tokenize($d,'/'),
