@@ -155,6 +155,8 @@ declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, 
  
   let $error-in-parameters := fcs:check-scan-parameters-and-return-error($scan-clause, $max-terms, $response-position)
   return if (exists($error-in-parameters)) then $error-in-parameters
+  else if (contains($query, $config:INDEX_INTERNAL_RESOURCE)) then
+      project:list-resources-resolved(config:param-value($config,$config:PROJECT_PID_NAME))
   else
   let $scx := tokenize($scan-clause,'='),
 	  $index-name := $scx[1],
@@ -243,18 +245,18 @@ declare function fcs:search-retrieve($query as xs:string, $x-context as xs:strin
       fcs-db:search-retrieve($query, $x-context, xs:integer($startRecord), xs:integer($maximumRecords), $x-dataview, $recordPacking, $config, $context-mapping)
 };
 
-declare function fcs:check-searchRetrieve-parameters-and-return-error($query as xs:string, $recordPacking as xs:string, $maximum-records as xs:string, $start-record as xs:string) {
-if ($query eq "") then <sru:searchRetrieveResponse><sru:version>1.2</sru:version><sru:numberOfRecords>0</sru:numberOfRecords>
+declare function fcs:check-searchRetrieve-parameters-and-return-error($query as xs:string, $recordPacking as xs:string, $maximum-records as xs:string, $start-record as xs:string) as element(sru:searchRetrieveResponse)? {
+    if ($query eq "") then <sru:searchRetrieveResponse><sru:version>1.2</sru:version><sru:numberOfRecords>0</sru:numberOfRecords>
                                 {diag:diagnostics("param-missing", "query")}</sru:searchRetrieveResponse>
-        else            if (not($recordPacking = ('string','xml'))) then 
-                        <sru:searchRetrieveResponse><sru:version>1.2</sru:version><sru:numberOfRecords>0</sru:numberOfRecords>
+    else if (not($recordPacking = ('string','xml'))) then 
+                           <sru:searchRetrieveResponse><sru:version>1.2</sru:version><sru:numberOfRecords>0</sru:numberOfRecords>
                                 {diag:diagnostics("unsupported-record-packing", $recordPacking)}</sru:searchRetrieveResponse>
-                else if (not(number($maximum-records)=number($maximum-records)) or number($maximum-records) < 0 ) then
-                        <sru:searchRetrieveResponse><sru:version>1.2</sru:version><sru:numberOfRecords>0</sru:numberOfRecords>
+    else if (not(number($maximum-records)=number($maximum-records)) or number($maximum-records) < 0 ) then
+                           <sru:searchRetrieveResponse><sru:version>1.2</sru:version><sru:numberOfRecords>0</sru:numberOfRecords>
                                 {diag:diagnostics("unsupported-param-value", "maximumRecords")}</sru:searchRetrieveResponse>
-                else if (not(number($start-record)=number($start-record)) or number($start-record) <= 0 ) then
-                        <sru:searchRetrieveResponse><sru:version>1.2</sru:version><sru:numberOfRecords>0</sru:numberOfRecords>
+    else if (not(number($start-record)=number($start-record)) or number($start-record) <= 0 ) then
+                           <sru:searchRetrieveResponse><sru:version>1.2</sru:version><sru:numberOfRecords>0</sru:numberOfRecords>
                                 {diag:diagnostics("unsupported-param-value", "startRecord")}</sru:searchRetrieveResponse>
-                else ()
+    else ()
 };
 

@@ -205,16 +205,15 @@ declare function fcs-db:scan($x-context as xs:string, $index-name as xs:string, 
                     cmdcheck:scan-profiles($x-context, $config)
                     
                 else 
-                if (starts-with($index-name, 'fcs.')) then
+                if (starts-with($index-name, $config:INDEX_INTERNAL_PREFIX)) then
                     let $log := util:log-app("TRACE", $config:app-name, "fcs:scan: fcs.* handling"),
                         $metsdivs := 
                            switch ($index-name)
                                 (: resources only :)
-                                case 'fcs.resource' return let $resources := project:list-resources($x-context)
-                                                           return $resources!<mets:div>{./@*}</mets:div>
-                                case 'fcs.rf' return if ($project-id eq $x-context) then project:list-resources($x-context)
+                                case $config:INDEX_INTERNAL_RESOURCE return fcs-db:get-resource-mets($x-context, $config)
+                                case $config:INDEX_INTERNAL_RESOURCEFRAGMENT return if ($project-id eq $x-context) then project:list-resources($x-context)
                                                         else resource:get($x-context,$project-id)
-                                case 'fcs.toc' return if ($project-id eq $x-context) then
+                                case $config:INDEX_INTERNAL_TOC return if ($project-id eq $x-context) then
                                     (: this delivers the whole structure of all resources - it may be too much in one shot 
                                         resource:get-toc($project-id) would deliver only up until chapter level 
                                         alternatively just take fcs.resource to get only resource-listing :)
@@ -226,7 +225,9 @@ declare function fcs-db:scan($x-context as xs:string, $index-name as xs:string, 
                                         return 
                                             resource:get-toc($x-context,$project-id)                                                        
                                                                
-                            default return ()
+                            default return (),
+                            $mets-structMap-or-div := if (count($metsdivs) > 1) then <mets:structMap>{$metsdivs}</mets:structMap> else $metsdivs,
+                            $logRet := util:log-app("DEBUG", $config:app-name, "fcs:scan: $mets-structMap-or-div := "||substring(serialize($mets-structMap-or-div),1,240))
                     (:let $map := 
 (\:                        if ($x-context= ('', 'default')) then 
                              doc(repo-utils:config-value($config, 'mappings')):\)
@@ -254,7 +255,7 @@ declare function fcs-db:scan($x-context as xs:string, $index-name as xs:string, 
                     
                     (: if no data was retrieved ($metsdivs empty) pass at least an empty element, so that the basic envelope gets rendered 
                     FIXME: actually this should return an empty envelope without any sru:term if there is no data (now it is one) :)
-                    return transform:transform(($metsdivs,<mets:div/>)[1],$xsl,())
+                    return transform:transform(($mets-structMap-or-div,<mets:div/>)[1],$xsl,())
 (:                    return $context-map:)
                 else
                     fcs-db:do-scan-default($index-name, $x-context, $sort, $config)         
@@ -1156,8 +1157,8 @@ declare function fcs-db:format-record-data($orig-sequence-record-data as node(),
                               let $rf-prev-ref := if (exists($rf-prev)) then concat('?operation=searchRetrieve&amp;query=', $config:INDEX_INTERNAL_RESOURCEFRAGMENT, '="', xmldb:encode-uri($rf-prev/data(@ID)), '"&amp;x-dataview=full&amp;x-dataview=navigation&amp;x-context=', $x-context) else ""                                                 
                               let $rf-next-ref:= if (exists($rf-next)) then concat('?operation=searchRetrieve&amp;query=', $config:INDEX_INTERNAL_RESOURCEFRAGMENT, '="', xmldb:encode-uri($rf-next/data(@ID)), '"&amp;x-dataview=full&amp;x-dataview=navigation&amp;x-context=', $x-context) else ""
                                return
-                                 (<fcs:ResourceFragment type="prev" pid="{$rf-prev/data(@ID)}" ref="{$rf-prev-ref}" label="{$rf-prev/data(@LABEL)}"  />,
-                                 <fcs:ResourceFragment type="next" pid="{$rf-next/data(@ID)}" ref="{$rf-next-ref}" label="{$rf-next/data(@LABEL)}"  />)
+                                 ( if ($rf-prev-ref ne "") then <fcs:ResourceFragment type="prev" pid="{$rf-prev/data(@ID)}" ref="{$rf-prev-ref}" label="{$rf-prev/data(@LABEL)}"  /> else (),
+                                   if ($rf-next-ref ne "") then <fcs:ResourceFragment type="next" pid="{$rf-next/data(@ID)}" ref="{$rf-next-ref}" label="{$rf-next/data(@LABEL)}"  /> else ())
                             else ()
                             
         let $dv-facs :=     if (contains($data-view,'facs')) 
@@ -1366,4 +1367,26 @@ declare function fcs-db:filter-kwic($node as node(), $mode as xs:string) as xs:s
     if ($mode eq 'before')
     then concat($node,' ')
     else concat(' ',$node)
+};
+
+declare %private function fcs-db:get-resource-mets($x-context as xs:string, $config) as element(mets:div)* {
+let $resources := project:list-resources($x-context),
+    $groupuing-index-exists := exists(index:map($x-context)//index[@key="fcs.resource-group-by"]),
+    $log := util:log-app("TRACE", $config:app-name, "fcs:get-resource-mets: $resources := "||substring(serialize($resources),1,240)||
+    " $groupuing-index-exists := "||$groupuing-index-exists),
+    $ret := if ($groupuing-index-exists) then
+        for $res-then-grouped-resources in $resources
+        (: this grouping for loop iterates over the following varaibles twice: Once to find the group key,
+           then again to generate the result using multiple resources at once (hence the [1]s) :)
+        let $res-x-context := data($res-then-grouped-resources/@ID),
+            $data := repo-utils:context-to-data($res-x-context[1], $config),
+            $group-key-string := xs:string(index:apply-index($data, 'fcs.resource-group-by', $x-context, 'match')[1]),
+            $log := util:log-app("TRACE", $config:app-name, "fcs:get-resource-mets: $data := "||substring(serialize($data),1,240)||
+            " $group-key-string := "||$group-key-string)
+        let $group-key := $group-key-string
+        group by $group-key
+        return <mets:div LABEL="{$group-key}">{$res-then-grouped-resources ! <mets:div>{./@*}</mets:div>}</mets:div>
+        else $resources ! <mets:div>{./@*}</mets:div>, (: Flattens the mets:div structure, that is removes the resourcefragment elements:)
+    $logRet := util:log-app("TRACE", $config:app-name, "fcs:get-resource-mets: $metsdivs := "||substring(serialize($ret),1,240))
+    return $ret
 };
