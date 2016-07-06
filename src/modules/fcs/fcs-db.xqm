@@ -773,11 +773,15 @@ declare function fcs-db:search-retrieve($query as xs:string, $x-context as xs:st
                                         "no-of-rf" := 1 
                                     }
                                 else 
-                                    $config
+                                    $config,
+            $log := util:log-app("TRACE", $config:app-name, "fcs:search-retrieve $config instance of map() "||($config instance of map())), 
+            $result-seq-expanded := if (not($config-param instance of map()) or $config-param("x-highlight") != "off") then
+               let $log := util:log-app("DEBUG", $config:app-name, "fcs:search-retrieve x-highlight = on")
+               return util:expand($result-seq)
+            else
+               let $log := util:log-app("DEBUG", $config:app-name, "fcs:search-retrieve x-highlight = off")
+               return $result-seq
        
-             let $result-seq-expanded := util:expand($result-seq),
-                 $log := util:log-app("TRACE", $config:app-name, "fcs-db:search-retrieve: $result-seq-expanded = "||serialize($result-seq-expanded))
-             
              let $records :=
                <sru:records>{
                 for $rec at $pos in $result-seq-expanded
@@ -898,9 +902,15 @@ return <sru:facetedResults>
 
 };
 
-(:declare function fcs-db:format-record-data($record-data as node(), $data-view as xs:string*, $x-context as xs:string*, $config as item()*, $resource-data as map(*)?) as item()*  {:)
-declare function fcs-db:format-record-data($record-data as node(), $data-view as xs:string*, $x-context as xs:string*, $config as item()*) as item()*  {
-    fcs-db:format-record-data($record-data, $record-data, $data-view, $x-context, $config)
+declare function fcs-db:format-record-data($record-data as node(), $data-view as xs:string*, $x-context as xs:string*, $config-param as item()*) as item()*  {
+    let $result-seq-expanded := if ($config-param("x-highlight") ne "off") then
+         let $log := util:log-app("TRACE", $config:app-name, "fcs:search-retrieve x-highlight = on")
+         return util:expand($result-seq)
+     else
+         let $log := util:log-app("TRACE", $config:app-name, "fcs:search-retrieve x-highlight = off")
+         return $result-seq
+    return 
+    fcs-db:format-record-data($record-data, $result-seq-expanded, $data-view, $x-context, $config-param)
 };
 
 
@@ -913,12 +923,12 @@ all based on mappings and parameters (data-view)
                     if not providable, setting the same data as in $record-data-input works mostly (expect, when you want to move out of the base_elem)
 @param $record-data-input the base-element with the match hits inside (marked with exist:match) 
 :)
-declare function fcs-db:format-record-data($orig-sequence-record-data as node(), $record-data-input as node(), $data-view as xs:string*, $x-context as xs:string*, $config as item()*) as item()*  {
+declare function fcs-db:format-record-data($orig-sequence-record-data as node(), $expanded-record-data-input as node(), $data-view as xs:string*, $x-context as xs:string*, $config as item()*) as item()*  {
     
     let $title := index:apply-index($orig-sequence-record-data, "title", $x-context),
         $log := util:log-app("DEBUG", $config:app-name, "fcs-db:format-record-data for "||$title||" data-views: "||string-join($data-view, ', '))
     (: this is (hopefully) temporary FIX: the resource-pid attribute is in fcs-namespace (or no namespace?) on resourceFragment element!  	:)
-	let $resource-pid:= ($record-data-input/ancestor-or-self::*[1]/data(@*[local-name()=$config:RESOURCE_PID_NAME]),
+	let $resource-pid:= ($expanded-record-data-input/ancestor-or-self::*[1]/data(@*[local-name()=$config:RESOURCE_PID_NAME]),
 (:	                      index:apply-index($orig-sequence-record-data, "fcs.resource",$config,'match-only'))[1]:)
 	                      index:apply-index($orig-sequence-record-data, "fcs.resource",$x-context,'match-only'))[1]
 	
@@ -936,12 +946,10 @@ declare function fcs-db:format-record-data($orig-sequence-record-data as node(),
 	                                         )
 	                               else ""
 	
-(:	let $resource-pid:= util:eval("$record-data-input/ancestor-or-self::*[1]/data(@cr:"||$config:RESOURCE_PID_NAME||")"):)
 	let $project-id := cr:resolve-id-to-project-pid($x-context)
     let $match-elem := 'w'
     let $match-ids := distinct-values(
-                      let $expanded-record-data-input := util:expand($record-data-input),
-                          $log := util:log-app("TRACE", $config:app-name, "fcs-db:format-record-data $expanded-record-data-input := "||substring(serialize($expanded-record-data-input), 1, 240))
+                      let $log := util:log-app("TRACE", $config:app-name, "fcs:format-record-data $expanded-record-data-input := "||substring(serialize($expanded-record-data-input), 1, 240))
                       return
                       if (exists($expanded-record-data-input//exist:match/ancestor::*[@cr:id]))
                       then 
@@ -962,19 +970,19 @@ declare function fcs-db:format-record-data($orig-sequence-record-data as node(),
                                        return $ret
                       else 
                         (: if no exist:match, take the root of the matching snippet,:)   
-                        let $log := util:log-app("TRACE", $config:app-name, "fcs-db:format-record-data $record-data-input contains no exist:match, falling back to its own @cr:id")
-                        return $record-data-input/data(@cr:id)
+                        let $log := util:log-app("TRACE", $config:app-name, "fcs-db:format-record-data $expanded-record-data-input contains no exist:match, falling back to its own @cr:id")
+                        return $expanded-record-data-input/data(@cr:id)
                       )
     (: if the match is a whole resourcefragment we dont need a lookup, its ID is in the attribute :)
     let $match-ids-without-offsets := for $m in $match-ids return fcs-db:remove-offset-from-match-id-if-exists($m)
-    let $resourcefragment-pids :=   if ($record-data-input/ancestor-or-self::*[1]/@*[local-name() = $config:RESOURCEFRAGMENT_PID_NAME]) 
-                                    then $record-data-input/ancestor-or-self::*[1]/data(@*[local-name() = $config:RESOURCEFRAGMENT_PID_NAME])
+    let $resourcefragment-pids :=   if ($expanded-record-data-input/ancestor-or-self::*[1]/@*[local-name() = $config:RESOURCEFRAGMENT_PID_NAME]) 
+                                    then $expanded-record-data-input/ancestor-or-self::*[1]/data(@*[local-name() = $config:RESOURCEFRAGMENT_PID_NAME])
                                     else 
                                         if (exists($match-ids)) 
                                         then distinct-values((for $m in $match-ids-without-offsets return rf:lookup-id($m,$resource-pid,$project-id)))
                                         else util:log-app("ERROR", $config:app-name, "fcs-db:format-record-data $match-ids is empty")
-    let $rfs :=      if ($record-data-input/@*[local-name()=$config:RESOURCEFRAGMENT_PID_NAME] or empty($match-ids)) 
-                    then $record-data-input 
+    let $rfs :=      if ($expanded-record-data-input/@*[local-name()=$config:RESOURCEFRAGMENT_PID_NAME] or empty($match-ids)) 
+                    then $expanded-record-data-input 
                     else
                         (: for some indexes we might only want to return a certain number of 
                            resource fragments, e.g. fcs.toc only the first one - this is defined in the
@@ -1013,17 +1021,17 @@ declare function fcs-db:format-record-data($orig-sequence-record-data as node(),
           $log := util:log-app("TRACE", $config:app-name, "fcs-db:format-record-data $highlight-requests := "||substring(serialize($highlight-requests),1,240))
       return $highlight-requests[fcs-db:remove-offset-from-match-id-if-exists(.) = $rf//@cr:id]
     
-    let $dumy4 := util:log-app("INFO",$config:app-name,"fcs-db:format-record-data $resourcefragment-pid => $matches-to-highlight: "||$resourcefragment-pid||" => "||string-join($matches-to-highlight,'; '))
+    let $dumy4 := util:log-app("TRACE",$config:app-name,"$resourcefragment-pid => $matches-to-highlight: "||$resourcefragment-pid||" => "||string-join($matches-to-highlight,'; '))
 
     let $parent-elem := ('p', 'u') (: TODO: read from configuration cql.serverChoice  :) 
-    let $record-data-toprocess := <rec> { if (not($record-data-input/local-name() = $parent-elem)) then $rf else $orig-sequence-record-data } </rec>,
+    let $record-data-toprocess := <rec> { if (not($expanded-record-data-input/local-name() = $parent-elem)) then $rf else $orig-sequence-record-data } </rec>,
         $log :=  util:log-app("TRACE", $config:app-name, "fcs:format-record-data $record-data-toprocess := "||substring(serialize($record-data-toprocess),1,240))
          let $log := util:log-app("TRACE", $config:app-name, "record-data-topprocess: "||name($record-data-toprocess/*)||" record-data-input/name():"||local-name($record-data-input))
          let $log := util:log-app("TRACE", $config:app-name, "$matches-to-highlight: "||string-join($matches-to-highlight,';'))
          
                                                 
         let $record-data-highlighted := 
-    (: not sure if to work with $record-data-input or $rf :)
+        (: not sure if to work with $expanded-record-data-input or $rf :)
             if (exists($matches-to-highlight) and (request:get-parameter("x-highlight","") != 'off'))
                                 then
                                     if ($config instance of map())
@@ -1061,7 +1069,9 @@ declare function fcs-db:format-record-data($orig-sequence-record-data as node(),
                                 return rf:get($rfp/@ID,$resource-pid,$project-id)/*
         
     (:    let $rf2 := <ref>{($record-data-highlighted)}</ref>:)
-    let $rf2 := fcs-db:highlight-matches-in-copy($record-data-input, $matches-to-highlight, $resourcefragment-pid)
+    let $rf2 := fcs-db:highlight-matches-in-copy($expanded-record-data-input, $matches-to-highlight, $resourcefragment-pid)
+    (:    ,$rf-window-next:)
+    (:   let $debug :=   <fcs:DataView type="debug" count="{count($record-data-highlighted)}">{transform:transform($record-data-highlighted, $fcs:flattenKwicXsl,())}</fcs:DataView>:)
          let $debug :=   <fcs:DataView type="debug" count="{count($rf)}" matchids="{$matches-to-highlight}">{$record-data-highlighted}</fcs:DataView>
         
         let $want-kwic := contains($data-view,'kwic'), 
@@ -1070,7 +1080,7 @@ declare function fcs-db:format-record-data($orig-sequence-record-data as node(),
                    (: tentatively kwic-ing from original input - to get the closest match
                     however this fails when matching on attributes, where the exist:match is only added in the highlighting function,
                     thus we need the processed record-data :)
-    (:                   let $kwic-html := kwic:summarize($record-data-input, $kwic-config):)
+    (:                   let $kwic-html := kwic:summarize($expanded-record-data-input, $kwic-config):)
                 (: we create the kwic from the working copy, thus we look up the resourcefragment :)
                      (:let $wc-fragment :=  (for $m in $matches-to-highlight return wc:lookup($m,$resource-pid,$project-id))/ancestor-or-self::*[string-length(.) > $fcs:kwicWidth][1]
                  let $wc-fragment-highlighted := fcs:highlight-matches-in-copy($wc-fragment,$matches-to-highlight) 
@@ -1079,7 +1089,7 @@ declare function fcs-db:format-record-data($orig-sequence-record-data as node(),
      (:(\:DEBUG             :\)  let $kwicInput := ($record-data[1],$orig-sequence-record-data/ancestor-or-self::*[string-length(.) ge $fcs:kwicWidth][1])[1]
                      let $kwicInput-highlighted := $kwicInput
     (\:                 let $kwicInput-highlighted := fcs:highlight-matches-in-copy($kwicInput,$matches-to-highlight):\):)
-                     (:let $log := util:log-app("DEBUG", $config:app-name, $orig-sequence-record-data/ancestor::*[string-length(.) gt $fcs:kwicWidth][1]):)
+                     (:let $log := util:log-app("TRACE", $config:app-name, $orig-sequence-record-data/ancestor::*[string-length(.) gt $fcs:kwicWidth][1]):)
                      let $flattened-record := transform:transform($record-data-highlighted, $fcs-db:flattenKwicXsl,()),
                          $logfr := util:log-app("TRACE", $config:app-name, "fcs-db:format-record-data $flattened-record := "||substring(serialize($flattened-record),1,240))
     (:                 let $flattened-record := repo-utils:serialise-as($record-data[1], 'html', $fcs:searchRetrieve, $config):)
@@ -1152,7 +1162,7 @@ declare function fcs-db:format-record-data($orig-sequence-record-data as node(),
                             
         let $dv-facs :=     if (contains($data-view,'facs')) 
                             then 
-    (:                            let $facs-uri:=fcs:apply-index ($record-data-input, "facs-uri",$x-context, $config):)
+    (:                            let $facs-uri:=fcs-db:apply-index ($expanded-record-data-input, "facs-uri",$x-context, $config):)
                                 let $facs-uri := facs:get-url($resourcefragment-pid, $resource-pid, $project-id)
         				        return <fcs:DataView type="facs" ref="{$facs-uri[1]}"/>
         				    else ()
