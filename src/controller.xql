@@ -583,15 +583,12 @@ declare function local:user-may($project as xs:string) as xs:boolean {
         
         let $db-user := request:get-attribute($domain||".user"),
         (:let $db-current-user := xmldb:get-current-user():)
-            $shib-user := config:shib-user(),
-            $user := if ((not(exists($db-user)) or $db-user='guest') and $shib-user) then                    
+        let $shib-user := config:shib-user()
+        let $user := if ((not(exists($db-user)) or $db-user='guest') and $shib-user) then                    
                             let $login := xmldb:login($project-dir, 'shib', config:param-value($project-config-map,'shib-user-pwd'))
                             return 'shib'
-                            else $db-user,
-            $log := util:log-app("TRACE",$config:app-name,"controller user-may $db-user := "||$db-user||" $user := "||$user),
-            $ret := ($user=$allowed-users), 
-            $logRest := util:log-app("TRACE",$config:app-name,"controller user-may return "||$ret)               
-        return $ret
+                            else $db-user
+        return ($user=$allowed-users)
 };
 
 (:~
