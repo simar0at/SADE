@@ -1,3 +1,4 @@
 [submodule "src/modules/cs-xsl"]
 	path = src/modules/cs-xsl
 	url = https://github.com/acdh-oeaw/cs-xsl.git
+	ignore = dirty
