@@ -561,7 +561,7 @@ declare function local:exist-resource-index($project) as xs:string {
 declare function local:user-may($project as xs:string) as xs:boolean {
     let $project-config-map := map{"config" := config:project-config($project)},
         $full-config-map := map{"config" := config:config($project)},
-        $log := util:log-app("TRACE",$config:app-name,"controller user-may "||$project)
+        $log := util:log-app("TRACE",$config:app-name,"controller user-may $project := "||$project||" $full-config-map('config') := "||substring(serialize($full-config-map("config")), 1, 240))
     return
         if (local:get-web-resource-type() = $local:web-resources) then true()
         else if (config:param-value($project-config-map,'visibility')!='protected') then true()
