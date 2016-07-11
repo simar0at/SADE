@@ -151,12 +151,10 @@ declare function fcs:explain($x-context as xs:string*, $config) as item() {
 :   there either scanClause-filter or x-context is used as constraint (scanClause-filter is prefered))
 
 :)
-declare function fcs:scan($scan-clause  as xs:string, $x-context as xs:string+, $max-terms as xs:integer, $response-position as xs:integer, $max-depth as xs:integer, $x-filter as xs:string?, $p-sort as xs:string?, $mode as xs:string?, $config) as item()? {
+declare function fcs:scan($scan-clause as xs:string, $x-context as xs:string+, $max-terms as xs:integer, $response-position as xs:integer, $max-depth as xs:integer, $x-filter as xs:string?, $p-sort as xs:string?, $mode as xs:string?, $config) as item()? {
  
   let $error-in-parameters := fcs:check-scan-parameters-and-return-error($scan-clause, $max-terms, $response-position)
   return if (exists($error-in-parameters)) then $error-in-parameters
-  else if (contains($query, $config:INDEX_INTERNAL_RESOURCE)) then
-      project:list-resources-resolved(config:param-value($config,$config:PROJECT_PID_NAME))
   else
   let $scx := tokenize($scan-clause,'='),
 	  $index-name := $scx[1],
@@ -241,6 +239,8 @@ declare function fcs:search-retrieve($query as xs:string, $x-context as xs:strin
   return
     if (exists($context-mapping/@url)) then
       fcs-http:search-retrieve($query, $x-context, xs:integer($startRecord), xs:integer($maximumRecords), $x-dataview, $recordPacking, $queryType, $config, $context-mapping)
+    else if (contains($query, $config:INDEX_INTERNAL_RESOURCE)) then
+      project:list-resources-resolved(config:param-value($config,$config:PROJECT_PID_NAME))
     else
       fcs-db:search-retrieve($query, $x-context, xs:integer($startRecord), xs:integer($maximumRecords), $x-dataview, $recordPacking, $config, $context-mapping)
 };
