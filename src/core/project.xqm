@@ -657,7 +657,7 @@ declare function project:list-resources-resolved($project) as element(sru:search
                  <fcs:DataView type="title">{$res-title}</fcs:DataView>
                  <fcs:DataView type="cite">{$res-cite}</fcs:DataView>          
                  <fcs:DataView type="metadata">{$dmd}</fcs:DataView>
-                 <fcs:DataView type="image" ref="{$indexImage-path}" />
+                 {if ($indexImage-path != '') then <fcs:DataView type="image" ref="{$indexImage-path}" /> else ()}
                </fcs:Resource>
     
      let $end-time := util:system-dateTime()
