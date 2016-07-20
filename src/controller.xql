@@ -289,7 +289,7 @@ switch (true())
                  $corr-rel-path := if (starts-with($rel-path, "/"||$module)) 
                                   then substring-after($rel-path, "/"||$module) 
                                   else $rel-path,
-                 $path := config:resolve-template-to-uri($project-config-map, $rel-path)
+                 $path := config:resolve-template-to-uri($project-config-map, $rel-path, false())
             return
             	let $target := $module||".xql"
             	let $url := $exist:controller||"/modules/"||$module||"/"||$target
