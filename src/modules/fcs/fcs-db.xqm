@@ -1027,7 +1027,7 @@ declare function fcs-db:format-record-data($orig-sequence-record-data as node(),
     let $parent-elem := ('p', 'u') (: TODO: read from configuration cql.serverChoice  :) 
     let $record-data-toprocess := <rec> { if (not($expanded-record-data-input/local-name() = $parent-elem)) then $rf else $orig-sequence-record-data } </rec>,
         $log :=  util:log-app("TRACE", $config:app-name, "fcs:format-record-data $record-data-toprocess := "||substring(serialize($record-data-toprocess),1,240))
-         let $log := util:log-app("TRACE", $config:app-name, "record-data-topprocess: "||name($record-data-toprocess/*)||" record-data-input/name():"||local-name($record-data-input))
+         let $log := util:log-app("TRACE", $config:app-name, "record-data-topprocess: "||name($record-data-toprocess/*)||" expanded-record-data-input/name():"||local-name($expanded-record-data-input))
          let $log := util:log-app("TRACE", $config:app-name, "$matches-to-highlight: "||string-join($matches-to-highlight,';'))
          
                                                 
