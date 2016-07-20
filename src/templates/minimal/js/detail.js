@@ -24,14 +24,14 @@ var baseurl = "fcs";
     function loadDetailData(targetRequest) {         
          var detail = $('#detail');
          detail.show();         
-         var detailFragment = targetRequest + " .title, .data-view, .navigation";
+         var detailFragment = targetRequest + " .title, .data-view.full, .data-view.navigation, .data-view.cite";
          detail.find('.navi').toggleClass("cmd_get");
          // console.log("loaddetail: " + detailFragment);
          $('#tabs-1').load(detailFragment, function () {
                         
                         $('#detail').find('.navi').toggleClass("cmd_get");
                         // move Title and navigation above the tabs
-                        $('.detail-header').html($(this).find(".title, .navigation"));
+                        $('.detail-header').html($(this).find(".title, .data-view.navigation"));
                         /*
                         var detail_anno = $(this).html();
                         $('#tabs-1').html(detail_anno);
