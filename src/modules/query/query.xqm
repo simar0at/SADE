@@ -72,7 +72,8 @@ and evaluates the xpath against the data passed as the second parameter
 declare function query:execute-query($q as xs:string, $data as node()*, $project) as node()* {
     let $xpath := query:query-to-xpath($q, $project)
     let $index-map:=     project:map($project),
-        $namespaces:=   $index-map//namespaces/ns
+        $namespaces:=   $index-map//namespaces/ns,
+        $log := util:log-app("TRACE", $config:app-name, "query:execute-query $namespaces := "||serialize($index-map//namespaces))
     let $declare-namespaces :=  
         for $ns in $namespaces
             let $prefix:=   $ns/@prefix,
