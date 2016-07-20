@@ -32,7 +32,6 @@ SOFTWARE
  : It also passes the dynamic resolver to the templating system, 
  : that allows it to resolve the module functions
  :)
-xquery version "3.0";
 
 (:import module namespace resolver="http://exist-db.org/xquery/resolver" at "resolver.xql";:)
 import module namespace templates="http://exist-db.org/xquery/templates" at "templates.xql";
