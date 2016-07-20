@@ -44,7 +44,7 @@ declare function local:init-project($project-pid as xs:string) {
               else "Project "||$project-pid||" could not be instantiated."
 };
 
-let $project-pid := 'abacus'
+let $project-pid := 'tunico'
 
 (:return     xmldb:reindex("/db/cr-projects"):)
 

@@ -51,20 +51,19 @@ for $rid in project:list-resource-pids($project-pid)
    return resource:dmd($rid,$project-pid,$md,"CMDI")
 };
 
-let $rid := "abacus.1",
-    $project-pid := "abacus",
-    $resource-label := "My first resource"
-
-let $data  := doc("/db/cr-data/_temp/mecmua/darling.xml")
+let $data  := doc("/db/cr-data/tunico/MalikArchitekt2.xml"),
+    $rid := "tunico.5",
+    $project-pid := "tunico",
+    $resource-label := $data//tei:titleStmt/tei:title
 
 (:~ 1.  uncomment this to add a new resource  :)        
-(:let  $resource-pid := resource:new-with-label($data, $project-pid, $resource-label) return $resource-pid :)
+(:let  $rid := resource:new-with-label($data, $project-pid, $resource-label) :)
 
 (:~ 2. use this to generate/refresh all auxiliary files for given resource :)
-(:let $gen-aux := resource:refresh-aux-files(('front','chapter','back','index'), $resource-pid, $project-pid) return $gen-aux:)
+(:let $gen-aux := resource:refresh-aux-files(('front','chapter','back','index'), $rid, $project-pid) return ($rid, $gen-aux):)
 
 (: uncomment this to refresh aux-files for all resources :)
-(:for $rid in project:list-resource-pids($project-pid):)
+for $rid in project:list-resource-pids($project-pid)
     return resource:refresh-aux-files(('front','chapter','back','index'), $rid, $project-pid) 
     
     
@@ -76,8 +75,8 @@ let $data  := doc("/db/cr-data/_temp/mecmua/darling.xml")
 (: let $toc-gen :=  toc:generate(('front','chapter'),  $resource-pid, $project-pid) return ($resource-pid, $toc-gen) :)
 
 (:~ 3. if you have links to facsimile/images in the data you can use this to extract them and write them in the project-configuration  :)
-(:let $gen-facs := facs:generate($resource-pid,$project-pid):)
-
+(:let $gen-facs := facs:generate($rid,$project-pid):)
+(:return $gen-facs:)
 
 (:~ 4. add a metadata record for given resource :)
 (:Register the teiHeader:)
