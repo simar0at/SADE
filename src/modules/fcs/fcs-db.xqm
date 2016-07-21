@@ -251,7 +251,9 @@ declare function fcs-db:scan($x-context as xs:string, $index-name as xs:string, 
 :)
 (:                    let $mappings := doc(repo-utils:config-value($config, 'mappings')):)
                     (: use only module-config here - otherwise scripts.path override causes problems :) 
-                    let $xsl := repo-utils:xsl-doc('metsdiv-scan', "xml", $config)
+                    let $xsl := repo-utils:xsl-doc('metsdiv-scan', "xml", $config),
+                        $index-doc-name := repo-utils:gen-cache-id("mets-index", ($x-context, $index-name, $sort, $max-depth)),
+                        $cache_mets := repo-utils:store-in-cache($index-doc-name , $mets-structMap-or-div, $config,'indexes')
                     
                     (: if no data was retrieved ($metsdivs empty) pass at least an empty element, so that the basic envelope gets rendered 
                     FIXME: actually this should return an empty envelope without any sru:term if there is no data (now it is one) :)
