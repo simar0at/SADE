@@ -112,7 +112,8 @@ function app:info ($node as node(), $model as map(*), $key, $x-format) {
 declare 
     %templates:wrap    
     %templates:default("x-format", "html")
-function app:list-resources($node as node(), $model as map(*), $x-format) {
+    %templates:default("maximumTerms", "800")
+function app:list-resources($node as node(), $model as map(*), $x-format as xs:string, $maximumTerms as xs:integer) {
    
 (:    let $structMap := project:list-resources($model("config")):)
     (: project/resource:* couldn't correctly handle the config sequence chaos as is in $model("config") 
@@ -122,7 +123,7 @@ function app:list-resources($node as node(), $model as map(*), $x-format) {
 (:        , $log := util:log-app("DEBUG",$config:app-name,"app:list-resources: $project-pid = "||$project-pid||" $ress = "||$ress):)
     (:for $res in $ress
         let $dmd := resource:dmd($res, $model("config") ):)            
-        return repo-utils:serialise-as($ress, $x-format, 'resource-list', $model("config"))
+        return repo-utils:serialise-as($ress, $x-format, 'resource-list', $model("config"), <parameters><param name="maximumTerms" value="{$maximumTerms}"/></parameters>)
 (:    return $dmd:)
     
 };
