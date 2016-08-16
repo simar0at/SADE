@@ -17,7 +17,10 @@ xquery version "3.0";
 module namespace fcs-http = "http://clarin.eu/fcs/1.0/http";
 
 declare namespace fcs = "http://clarin.eu/fcs/1.0";
-declare namespace hc = "http://exist-db.org/xquery/httpclient";
+(: This seems to be standard for 3.0RC2+ :)
+declare namespace hc = "http://expath.org/ns/http-client";
+(: This seems to be standard for 3.0RC1 and below :)
+declare namespace xhc = "http://exist-db.org/xquery/httpclient";
 
 import module namespace config="http://exist-db.org/xquery/apps/config" at "../../core/config.xqm";
 import module namespace diag =  "http://www.loc.gov/zing/srw/diagnostic/" at  "../diagnostics/diagnostics.xqm";
@@ -48,13 +51,13 @@ declare function fcs-http:get-result-or-diag($url as xs:anyURI) as item()+ {
    let $ret :=
       if ($response/@statusCode != 200) then
         diag:diagnostics('general-error', ("&#10;GET: ", $url, "&#10;", util:serialize($response, ())))
-      else if (lower-case($response/hc:body/@mimetype) != 'application/xml' and 
-               lower-case($response/hc:body/@mimetype) != 'text/xml; charset=utf-8') then
+      else if (lower-case($response/(hc:body|xhc:body)/@mimetype) != 'application/xml' and 
+               lower-case($response/(hc:body|xhc:body)/@mimetype) != 'text/xml; charset=utf-8') then
         diag:diagnostics('general-error', ("&#10;GET: ", $url, "&#10;", util:serialize($response, ())))
-      else if (lower-case($response/hc:body/@encoding) = 'base64encoded') then
-        util:base64-decode($response/hc:body/text())
+      else if (lower-case($response/(hc:body|xhc:body)/@encoding) = 'base64encoded') then
+        util:base64-decode($response/(hc:body|xhc:body)/text())
       else 
-        $response/hc:body/*,
+        $response/(hc:body|xhc:body)/*,
        $retLog := util:log-app("DEBUG", $config:app-name, "get-result-or-diag http: return: "||substring(serialize($ret), 1, 1000))      
    return $ret
 };
