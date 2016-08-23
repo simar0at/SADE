@@ -48,7 +48,7 @@
     <xsl:template match="tei:supplied | supplied | tei:corr | corr | tei:reg | reg | tei:figure | figure | tei:note | note"/>
     <!-- headers and footers are not part of running text -->
     <xsl:template match="fw | tei:fw | *[self::seg or self::tei:seg][@type='footer' or @type='header']"/>
-    <!--<xsl:template match="*[self::tei:w|self::w][descendant::seg[@type='footer'] and not(following-sibling::*) or following-sibling::*[1]/self::seg[@type='footer']]">
+     <!--<xsl:template match="*[self::tei:w|self::w][descendant::seg[@type='footer'] and not(following-sibling::*) or following-sibling::*[1]/self::seg[@type='footer']]">
         <xsl:choose>
             <xsl:when test="@cr:wf">
                 <xsl:choose>
