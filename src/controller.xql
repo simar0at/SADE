@@ -402,7 +402,7 @@ declare function local:redirect-missing-slash($project as xs:string) as element(
             (:if (not(request:get-attribute($domain||".user")=$allowed-users)):) 
             if (not($user-may))             
             then
-               let $log:=util:log-app("TRACE",$config:app-name,'return-requested-html-view protected, user-may not, project-exists '||$project)
+               let $log:=util:log-app("DEBUG",$config:app-name,'return-requested-html-view protected, user-may not, project-exists '||$project)
                return
                 <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
                     <forward url="{$exist:controller}/modules/access-control/login.html"/>
