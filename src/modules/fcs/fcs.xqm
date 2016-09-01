@@ -1,4 +1,37 @@
 xquery version "3.0";
+
+(:
+The MIT License (MIT)
+
+Copyright (c) 2016 Austrian Centre for Digital Humanities at the Austrian Academy of Sciences
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE
+:)
+(:
+: Module Name: FCS
+: Date: 2012-03-01
+: 
+: XQuery 
+: Specification : XQuery v1.0
+: Module Overview: Federated Content Search
+:)
+
 (:~ This module provides methods to serve XML-data via the FCS/SRU-interface  
 : @see http://clarin.eu/fcs 
 : @author Matej Durco
@@ -6,7 +39,7 @@ xquery version "3.0";
 : @version 1.1 
 :)
 module namespace fcs = "http://clarin.eu/fcs/1.0";
-
+ 
 declare namespace sru = "http://www.loc.gov/zing/srw/";
 
 declare variable $fcs:explain as xs:string := "explain";
@@ -36,20 +69,8 @@ import module namespace fcs-http = "http://clarin.eu/fcs/1.0/http" at "fcs-http.
 declare variable $fcs:explain as xs:string := "explain";
 declare variable $fcs:scan  as xs:string := "scan";
 declare variable $fcs:searchRetrieve as xs:string := "searchRetrieve";
-
-declare variable $config:app-root external;
-
 declare variable $fcs:scanSortText as xs:string := "text";
 declare variable $fcs:scanSortSize as xs:string := "size";
-declare variable $fcs:scanSortDefault := $fcs:scanSortText;
-declare variable $fcs:indexXsl := doc(concat(system:get-module-load-path(),'/index.xsl'));
-declare variable $fcs:flattenKwicXsl := doc(concat(system:get-module-load-path(),'/flatten-kwic.xsl'));
-declare variable $fcs:kwicWidth := 40;
-declare variable $fcs:filterScanMinLength := 2;
-declare variable $fcs:defaultMaxTerms := 50;
-declare variable $fcs:defaultMaxRecords := 10;
-
-
 (:~ The main entry-point. Processes request-parameters
 regards config given as parameter + the predefined sys-config
 @returns the result document (in xml, html or json)
