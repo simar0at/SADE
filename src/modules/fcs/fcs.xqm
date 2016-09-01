@@ -66,11 +66,6 @@ import module namespace resource="http://aac.ac.at/content_repository/resource" 
 import module namespace fcs-db = "http://clarin.eu/fcs/1.0/db" at "fcs-db.xqm";
 import module namespace fcs-http = "http://clarin.eu/fcs/1.0/http" at "fcs-http.xqm";
 
-declare variable $fcs:explain as xs:string := "explain";
-declare variable $fcs:scan  as xs:string := "scan";
-declare variable $fcs:searchRetrieve as xs:string := "searchRetrieve";
-declare variable $fcs:scanSortText as xs:string := "text";
-declare variable $fcs:scanSortSize as xs:string := "size";
 (:~ The main entry-point. Processes request-parameters
 regards config given as parameter + the predefined sys-config
 @returns the result document (in xml, html or json)

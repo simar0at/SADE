@@ -569,7 +569,7 @@ declare function local:user-may($project as xs:string) as xs:boolean {
     return
         if (local:get-web-resource-type() = $local:web-resources) then true()
         else if (config:param-value($project-config-map,'visibility')!='protected') then true()
-        else        
+        else
         let $project-dir := config:param-value($project-config-map,'project-dir')
         (:let $domain:=   "at.ac.aac.exist."||$cr-instance:)
         let $domain:= "org.exist.login"
