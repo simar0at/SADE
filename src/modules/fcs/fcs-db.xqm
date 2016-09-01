@@ -990,7 +990,7 @@ declare function fcs-db:format-record-data($orig-sequence-record-data as node(),
                                     else 
                                         if (exists($match-ids)) 
                                         then distinct-values((for $m in $match-ids-without-offsets return rf:lookup-id($m,$resource-pid,$project-id)))
-                                        else util:log-app("ERROR", $config:app-name, "fcs-db:format-record-data $match-ids is empty")
+                                        else util:log-app("ERROR", $config:app-name, "fcs-db:format-record-data $match-ids is empty"),
         $initial-rfs := fcs-db:get-rfs-xml($expanded-record-data-input, $project-id, $resource-pid, $initial-resourcefragment-pids, $match-ids, $config),
         $match-ids-page-splitted := fcs-db:recalculate-offset-for-match-ids-on-page-split($match-ids, $initial-rfs),
         $splitted-resourcefragment-pids := fcs-db:get-match-rfpid($match-ids-page-splitted),

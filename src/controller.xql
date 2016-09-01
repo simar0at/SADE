@@ -402,7 +402,7 @@ declare function local:redirect-missing-slash($project as xs:string) as element(
             (:if (not(request:get-attribute($domain||".user")=$allowed-users)):) 
             if (not($user-may))             
             then
-               let $log:=util:log-app("DEBUG",$config:app-name,'return-requested-html-view protected, user-may not, project-exists '||$project)
+               let $log:=util:log-app("TRACE",$config:app-name,'return-requested-html-view protected, user-may not, project-exists '||$project)
                return
                 <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
                     <forward url="{$exist:controller}/modules/access-control/login.html"/>
@@ -583,12 +583,15 @@ declare function local:user-may($project as xs:string) as xs:boolean {
         
         let $db-user := request:get-attribute($domain||".user"),
         (:let $db-current-user := xmldb:get-current-user():)
-        let $shib-user := config:shib-user()
-        let $user := if ((not(exists($db-user)) or $db-user='guest') and $shib-user) then                    
+            $shib-user := config:shib-user(),
+            $user := if ((not(exists($db-user)) or $db-user='guest') and $shib-user) then                    
                             let $login := xmldb:login($project-dir, 'shib', config:param-value($project-config-map,'shib-user-pwd'))
                             return 'shib'
-                            else $db-user
-        return ($user=$allowed-users)
+                            else $db-user,
+            $log := util:log-app("TRACE",$config:app-name,"controller user-may $db-user := "||$db-user||" $user := "||$user),
+            $ret := ($user=$allowed-users), 
+            $logRest := util:log-app("TRACE",$config:app-name,"controller user-may return "||$ret)               
+        return $ret
 };
 
 (:~
