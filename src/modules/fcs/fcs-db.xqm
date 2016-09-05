@@ -515,8 +515,9 @@ declare function fcs-db:term-from-nodes($nodes as item()+, $order-param as xs:st
      is not possible in eXist (although a xquery 3.0 use case cf. http://www.w3.org/TR/xquery-30-use-cases/#groupby_q6) we have to separated 
      the group operation from the sort operation here     
     :)
-    let $terms-unordered :=           
-        for $g at $pos in $nodes
+    let $terms-unordered :=
+        (: If you need at $pos here then check if https://github.com/eXist-db/exist/issues/967 is solved. :)           
+        for $g in $nodes
         let $term-value-g := string-join(index:apply-index($g,$index-key,$project-pid,'match-only'),' ')
         group by $term-value-g 
         return
