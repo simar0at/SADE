@@ -77,11 +77,6 @@ declare variable $fcs-db:searchRetrieve as xs:string := "searchRetrieve";
 
 declare variable $config:app-root external;
 
-declare variable $fcs-db:scanSortText as xs:string := "text";
-declare variable $fcs-db:scanSortSize as xs:string := "size";
-declare variable $fcs-db:scanSortValue as xs:string := "x-value";
-declare variable $fcs-db:scanSortDefault := $fcs-db:scanSortText;
-declare variable $fcs-db:scanSortParamValues as xs:string+ := ($fcs-db:scanSortText, $fcs-db:scanSortSize, $fcs-db:scanSortValue);
 declare variable $fcs-db:indexXsl := doc(concat(system:get-module-load-path(),'/index.xsl'));
 declare variable $fcs-db:flattenKwicXsl := doc(concat(system:get-module-load-path(),'/flatten-kwic.xsl'));
 declare variable $fcs-db:kwicWidth := 40;
@@ -174,7 +169,7 @@ declare function fcs-db:explain($x-context as xs:string*, $config, $context-mapp
 
 declare function fcs-db:scan($x-context as xs:string, $index-name as xs:string, $start-term as xs:string,
                           $max-terms as xs:integer, $response-position as xs:integer, $max-depth as xs:integer,
-                          $x-filter as xs:string, $sort as xs:string?, $mode as xs:string,
+                          $x-filter as xs:string, $sort as item()?, $mode as xs:string,
                           $config, $context-mappings as item()+) as item() {
   (: get the base-index from cache, or create and cache :)
   let $index-doc-name := repo-utils:gen-cache-id("index", ($x-context, $index-name, $sort, $max-depth)),	
@@ -439,8 +434,12 @@ declare function fcs-db:scan-all($project as xs:string, $filter as xs:string, $c
                 <fcs:countTerms level="total">{count($terms//sru:term)}</fcs:countTerms>:)
 };
 
-declare function fcs-db:do-scan-default($index as xs:string, $x-context as xs:string, $sort as xs:string?, $config) as item()* {
-    let $log := util:log-app("TRACE", $config:app-name, "fcs-db:do-scan-default: $index := "||$index||", $x-context := "||$x-context||", $sort := "||$sort)
+(:~ @param sort can be either a string (equal to $fcs:scanSortParamValues) or a map (if each index facet should be sorted by its own creterion)
+ : 
+ :)
+declare function fcs-db:do-scan-default($index as xs:string, $x-context as xs:string, $sort as item()?, $config) as item()* {
+    let $log := util:log-app("TRACE", $config:app-name, "fcs-db:do-scan-default: $index := "||$index||", $x-context := "||$x-context||
+	                                                                          ", $sort := "||fcs-db:print-map-or-string($sort))
     let $logConfig := util:log-app("TRACE", $config:app-name, "fcs-db:do-scan-default: $config := "||substring(serialize($config),1,80)||"...")
     let $ts0 := util:system-dateTime()
     let $project-pid := repo-utils:context-to-project-pid($x-context,$config)
@@ -483,8 +482,15 @@ declare function fcs-db:do-scan-default($index as xs:string, $x-context as xs:st
         </sru:scanResponse>
 };
 
-(:%private :)
-declare function fcs-db:term-from-nodes($nodes as item()+, $order-param as xs:string?, $index-key as xs:string, $project-pid as xs:string) {
+declare function fcs-db:print-map-or-string($map-or-string as item()?) as xs:string {
+if ($map-or-string instance of map()) then 
+    string-join(map:keys($map-or-string)!(.||' := '||$map-or-string(.)), ', ')
+else if (exists($map-or-string)) then xs:string($map-or-string) else ""
+};
+
+(:~ @param $order-param can be either a map or a string. 
+~:)
+declare function fcs-db:term-from-nodes($nodes as item()+, $order-param as item()?, $index-key as xs:string, $project-pid as xs:string) {
     let $ts0 := util:system-dateTime()
     let $dummy := util:log-app("TRACE", $config:app-name, "fcs-db:term-from-nodes: "||$index-key)
     let $termlabels := project:get-termlabels($project-pid,$index-key)
@@ -505,8 +511,9 @@ declare function fcs-db:term-from-nodes($nodes as item()+, $order-param as xs:st
                     let $label-map := map:entry("label",$label-value)                            
                     return map:new(($value-map,$label-map)):)
     let $index-elem := index:index($index-key,$project-pid)
-    let $sort := ($order-param,$index-elem/@sort[.=($fcs-db:scanSortSize,$fcs-db:scanSortText)],$fcs-db:scanSortDefault)[1],
-        $logSettings := util:log-app("TRACE", $config:app-name, "fcs-db:term-from-nodes: $sort :="||$sort||", $index-elem := "||substring(serialize($index-elem),1,240))
+    let $sort := ($order-param,$index-elem/@sort[.=$fcs:scanSortParamValues],$fcs:scanSortDefault)[1],
+        $logSettings := util:log-app("TRACE", $config:app-name, "fcs-db:term-from-nodes: $sort :="||fcs-db:print-map-or-string($sort)||
+		                                                                              ", $index-elem := "||substring(serialize($index-elem),1,240))
     let $ts1 := util:system-dateTime()
     (: since an expression like  
         group by $x 
@@ -539,9 +546,18 @@ declare function fcs-db:term-from-nodes($nodes as item()+, $order-param as xs:st
                         then $term-label[1]
                         else string-join(index:apply-index($firstOccurence,$index-key,$project-pid,'label-only'),''),
                 $log := util:log-app("TRACE", $config:app-name, 'fcs-db:term-from-nodes: $terms label => '||$label)
+            
+            let $sort := 
+                if (not($sort instance of map())) 
+                then $sort 
+                else 
+                    if (map:contains($sort, $index-key))
+                    then map:get($sort, $index-key)
+                    else $fcs:scanSortDefault
             order by 
-                if ($sort='size') then $t-count else true() descending,
-                if ($sort='text') then $label else true() ascending
+                if ($sort=$fcs:scanSortDefault) then $t-value else true() ascending,
+                if ($sort=$fcs:scanSortSize) then $t-count else true() descending,
+                if ($sort=$fcs:scanSortValue) then $label else true() ascending
                  collation "?lang=de-DE"
             return map:new((map:entry("value",$t-value),map:entry("count",$t-count),map:entry("label",$label)))
             
@@ -567,12 +583,12 @@ declare function fcs-db:term-from-nodes($nodes as item()+, $order-param as xs:st
 
 
 
-declare %private function fcs-db:group-by-facet($data as node()*, $order-param as xs:string?, $index as element(index), $project-pid) as item()* {
+declare %private function fcs-db:group-by-facet($data as node()*, $order-param as item()?, $index as element(index), $project-pid) as item()* {
     let $index-key := $index/xs:string(@key)
-    let $log := util:log-app("TRACE", $config:app-name, "fcs-db:group-by-facet($data, "||$order-param||", "||$index/@key||", "||$project-pid||")")
+    let $log := util:log-app("TRACE", $config:app-name, "fcs-db:group-by-facet($data, "||fcs-db:print-map-or-string($order-param)||", "||$index/@key||", "||$project-pid||")")
     let $termlabels := project:get-termlabels($project-pid,$index-key)
     let $index-sorting-key := $index/@sort
-    let $facet_sort := ($order-param,$index-sorting-key[.=($fcs-db:scanSortSize,$fcs-db:scanSortText)],$fcs-db:scanSortDefault)[1]
+    let $facet_sort := ($order-param,$index-sorting-key[.=$fcs:scanSortParamValues],$fcs:scanSortDefault)[1]
     let $groups := 
         let $maps := 
             for $x in $data 
@@ -585,7 +601,7 @@ declare %private function fcs-db:group-by-facet($data as node()*, $order-param a
         return $map
     let $group-keys := map:keys($groups)
     let $log := (util:log-app("TRACE", $config:app-name, "fcs-db:group-by-facet: $group-keys: "||string-join($group-keys,', ')),
-                 util:log-app("TRACE", $config:app-name, "fcs-db:group-by-facet: $order-param="||$order-param||", $index-sorting-key="||$index-sorting-key||", $fcs-db:scanSortDefault="||$fcs-db:scanSortDefault),
+                 util:log-app("TRACE", $config:app-name, "fcs-db:group-by-facet: $order-param="||$order-param||", $index-sorting-key="||$index-sorting-key||", $fcs:scanSortDefault="||$fcs:scanSortDefault),
                  util:log-app("TRACE", $config:app-name, "fcs-db:group-by-facet: sorting facet "||$index-key||" by "||$facet_sort))
     let $terms := 
         for $group-key in $group-keys

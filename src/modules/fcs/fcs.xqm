@@ -46,9 +46,12 @@ declare variable $fcs:explain as xs:string := "explain";
 declare variable $fcs:scan  as xs:string := "scan";
 declare variable $fcs:searchRetrieve as xs:string := "searchRetrieve";
 declare variable $fcs:defaultMaxTerms := 50;
-declare variable $fcs:defaultMaxRecords := 10;declare variable $fcs:scanSortText as xs:string := "text";
+declare variable $fcs:defaultMaxRecords := 10;
+declare variable $fcs:scanSortText as xs:string := "text";
 declare variable $fcs:scanSortSize as xs:string := "size";
+declare variable $fcs:scanSortValue as xs:string := "x-value";
 declare variable $fcs:scanSortDefault := $fcs:scanSortText;
+declare variable $fcs:scanSortParamValues as xs:string+ := ($fcs:scanSortText, $fcs:scanSortSize, $fcs:scanSortValue);
 
 import module namespace functx = "http://www.functx.com";
 import module namespace request="http://exist-db.org/xquery/request";
@@ -117,9 +120,12 @@ declare function fcs:main($config) as item()* {
          return 
             fcs:search-retrieve($query, $x-context, $start-record, $maximum-records, $x-dataview, $recordPacking, $queryType, $config)
     else 
-      diag:diagnostics('unsupported-operation',$operation)
-    
-   return repo-utils:serialise-as($result, $x-format, $operation, $config, $x-context, ())
+      diag:diagnostics('unsupported-operation',$operation),
+      $xslParams := if ($operation eq $fcs:scan) then 
+        <parameters>
+          <param name="sort" value="{request:get-parameter("sort", ())}"/>
+        </parameters> else () 
+   return  repo-utils:serialise-as($result, $x-format, $operation, $config, $x-context, $xslParams)
    
 };
 
@@ -162,9 +168,10 @@ declare function fcs:scan($scan-clause as xs:string, $x-context as xs:string+, $
       The term [from the scan clause] is the position within the ordered list of terms at which to start, and is referred to as the start term. :)
  	  $start-term:= ($scx[2],'')[1],	 
       (: precedence of sort parameter: 1) user input (via $sort), 2) index map definition @sort in <index>, 3) fallback = 'text' via $fcs:scanSortText :)
-      (: keyword 'text' and 'size', otherwise fall back on index map definitions :)
-    $sort := if ($p-sort eq $fcs:scanSortText or $p-sort eq $fcs:scanSortSize) then $p-sort else ()	
+      (: keyword 'text' and 'size', otherwise fall back on index map definitions :)	
 	 
+    (: fcs:parse-sort-parameter() can either return a string or a map :)
+    $sort := if ($p-sort) then fcs:parse-sort-parameter($p-sort) else ()
 	 let $sanitized-xcontext := repo-utils:sanitize-name($x-context)
 	 let $project-id := if (config:project-exists($x-context)) then $x-context else cr:resolve-id-to-project-pid($x-context)
     let $index-doc-name := repo-utils:gen-cache-id("index", ($sanitized-xcontext, $index-name, $sort, $max-depth)),
@@ -184,9 +191,32 @@ declare function fcs:scan($scan-clause as xs:string, $x-context as xs:string+, $
       $log2 := util:log-app("DEBUG", $config:app-name, "$sort-or-default="||$sort-or-default)
    return
      if (exists($context-mapping/@url)) then
-       fcs-http:scan($x-context, $index-name, $start-term, xs:integer($max-terms), xs:integer($response-position), xs:integer($max-depth), $x-filter, $sort, $mode, $config, $context-mapping)
+       fcs-http:scan($x-context, $index-name, $start-term, xs:integer($max-terms), xs:integer($response-position), xs:integer($max-depth), $x-filter, $p-sort, $mode, $config, $context-mapping)
      else
        fcs-db:scan($x-context, $index-name, $start-term, xs:integer($max-terms), xs:integer($response-position), xs:integer($max-depth), $x-filter, $sort, $mode, $config, $context-mapping) 
+};
+
+(:~ Parses the content of the fcs sort parameter. This can be either a simple token equal 
+ :  to one of $fcs:scanSortParamValues or it can be an array like [placeName:text,placeType:x-value]
+ :  so that a hierarchic index scann will be sorted first by the raw value of placeType 
+ :  and its content by the text value (i.e. the display string / label)
+ : @return Either a string (if its a simple, valid keyword), a map (if its a complex, array-like value) or nothing (if its invalid - this should be made an exception, actually)  
+~:)
+declare function fcs:parse-sort-parameter($order-param-unparsed as xs:string) as item()? {
+    (: if $order-param is an array, then we try to parse it :)
+    if (matches(normalize-space($order-param-unparsed),"^\[(([\w\d]+):("||string-join($fcs:scanSortParamValues,'|')||"),?)+\]$")) 
+    then 
+        let $order-param-parsed := fn:analyze-string($order-param-unparsed, "((\w+):("||string-join($fcs:scanSortParamValues,'|')||"))")
+        let $map-entries :=  
+            for $g in $order-param-parsed//fn:group[@nr = '1']
+            return map:entry($g//fn:group[@nr = '2']/xs:string(.), $g//fn:group[@nr = '3']/xs:string(.))
+        return map:new($map-entries)
+    else 
+        (: If its a legal value, use it as a string :)
+        if ($order-param-unparsed = $fcs:scanSortParamValues)
+        then $order-param-unparsed
+        (: else discard it :) 
+        else ()
 };
 
 declare function fcs:check-scan-parameters-and-return-error($scan-clause  as xs:string, $max-terms as xs:string, $response-position as xs:string) as item()? {
