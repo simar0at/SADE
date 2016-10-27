@@ -14,7 +14,6 @@
         padding-right: 0.5em;
         float: left;
         width: 24%;
-        overflow-y: hidden;
     }
 
     #navigation {        
@@ -65,7 +64,6 @@
 @media all and (min-width: 800px) and (max-width: 1199px) {
     #main {
         clear: left;
-        overflow-y: hidden;
     }
 
     #detail.content-part { 
