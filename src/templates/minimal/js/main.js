@@ -113,36 +113,36 @@ function minimal_template_ui_setup() {
 
     processParams();
     
-    
+    m.priority_event_handlers();
     // refresh persistent link
-    $("a#persistent-link").live('hover', persistentLink);
+    $(document).on('hover', "a#persistent-link", persistentLink);
     
     
     // handle link to toggle info
-    $("#navigation a.link-info").live('click', toggle_info);    
+    $(document).on('click', "#navigation a.link-info", toggle_info);    
     $("#navigation .data-view.metadata, #navigation .data-view.image, #navigation .data-view.cite").hide();
     
     // handle link to explain
-    $("#navigation a.link-explain").live('click', load_explain);
-    $("#navigation .indexInfo a").live('click', load_scan);
+    $(document).on('click', "#navigation a.link-explain", m.load_explain);
+    $(document).on('click', "#navigation .zr-indexInfo a.value-caller", m.load_scan);
     
     // handle loading to main (scan -> search) (.content - to distinguish from .header .prev-next) 
-    $("#navigation .load-main .content a").live('click', load_main);
+    $(document).on('click', "#navigation .load-main .content a", m.load_main);
     // paging in scan
-    $("#navigation .scan .prev-next a").live('click', load_scan);
+    $(document).on('click', "#navigation .projectDMD.record .result-navigation.prev-next a", m.load_scan);
     
     //
-    $("#navigation a.toc").live('click', load_toc);
+    $(document).on('click', "#navigation .record.resource a.toc", m.load_toc_or_toggle);
     
-    $("#navigation .toc a").live('click', handle_toc);
-    $("#navigation .scan-index-fcs-toc a").live('click', handle_toc);
+    $(document).on('click', "#navigation .toc a", handle_toc);
+    $(document).on('click', "#navigation .scan-index-fcs-toc .resource a", handle_toc);
     
-    $("#navigation a.index").live('click', load_scan);
+    $(document).on('click', "#navigation a.index", m.load_scan);
 
     // register filter
-    $("#navigation form").live('submit', filter_default_nav_results);
+    $(document).on('submit', "#navigation form", filter_default_nav_results);
   
-    $("#query-input form").live('submit', query);
+    $(document).on('submit', "#query-input form", m.query);
 
     // Dialog Link
     $('#dialog_link').click(function() {
@@ -150,17 +150,19 @@ function minimal_template_ui_setup() {
         return false;
     });
 
-    $('.result-header a').live("click", load_main);
-    $("#navigation .indexes .scan a").live('click', load_main);
+    $(document).on("click", '.result-header a', m.load_main);
+    $(document).on("click", "#navigation .indexes .scan a", m.load_main);
     // links inside the detail-view (person-links) target:#context-detail
-    $('#detail .data-view.full a').live("click", load_context_details);
+    $(document).on("click", '#detail .data-view.full a', m.load_context_details);
 
-    $('#context-detail a').live("click", load_in_context_details);
+    $(document).on("click", '#context-detail a', m.load_in_context_details);
 
     // customize icons (from generic 
-    customizeIcons();
+    m.customizeIcons();
 
 }
+
+m.priority_event_handlers = function() {};
 
 //register this on document ready
 $(minimal_template_ui_setup); 
@@ -212,20 +214,27 @@ just a wrapper around jQuery.load() to ensure consistent functionality
 function load_(targetContainer, targetRequest, callback) {
 
 console.log("load_: " + targetRequest );
-     loading(targetContainer, 'start');
+     m.loading(targetContainer, 'start');
      
      //targetContainer.html('');
      targetContainer.load(targetRequest, function( response, status, xhr ) {
-            loading(targetContainer, 'stop');
+            m.loading(targetContainer, 'stop');
             //targetContainer.removeClass("cmd_get");
             if (status=='error') { 
-            
-            targetContainer.append("<p class='error'>Sorry, there was an error!</p>" +
-            "<p>calling <a href='" + targetRequest + "' >" + targetRequest + "</a></p>"); }
-                else  { if (typeof callback == 'function')  { callback();} }
+                var targetContIds = targetRequest.substr(targetRequest.indexOf(' ') + 1);
+                var targetURI = targetRequest.substr(0, targetRequest.indexOf(' '));  
+               targetContainer.append("<p class='error'>Sorry, there was an error!</p>" +
+                  "<p>calling <a target='_blank'' href='" + targetURI + "' >" + targetURI + "</a>"+ targetContIds + "</p>");
+            } else  {
+               if (typeof callback == 'function')  {
+                   callback();
+               } 
+            }
      });        
      
 }
+
+m.load_ = load_;
 
 function load_explain(event) {
     event.preventDefault();
@@ -240,13 +249,15 @@ function load_explain(event) {
         $.get(targetRequest,function(data) {
                 target.append(data);
                 target.append("<div class='scan load-main' />");
-                $(target).prepend("<span class='ui-icon ui-icon-close cmd_close' />");
-                close_button = $(target).find(".cmd_close");
+                target.prepend("<span class='ui-icon ui-icon-close cmd_close' />");
+                close_button = target.find(".cmd_close");
                 close_button.click(function() { target.find('.explain').toggle(); target.find('.scan').toggle(); });                
             }        
         );        
       }
 }
+
+m.load_explain = load_explain;
 
 function load_scan(event) {
     event.preventDefault();
@@ -267,11 +278,11 @@ function load_scan(event) {
         console.log(target);
         target.show();
 /*       target.toggleClass("cmd_get");*/
-       load_(target, targetRequest, function() {               
+       m.load_(target, targetRequest, function() {               
                 $(target).prepend("<span class='ui-icon ui-icon-close cmd_close' />");
                 close_button = $(target).find(".cmd_close");
-                close_button.click(function() { target.toggle(); });
-                customizeIcons();
+                close_button.click(m.onCloseButtonClicked(target));
+                m.customizeIcons();
 
                 target.find("ul").treeview({
         			collapsed: true,
@@ -281,16 +292,31 @@ function load_scan(event) {
        ); 
 /*     target.load(targetRequest, function() {target.toggleClass("cmd_get");});        */
      
+}      
+
+m.load_scan = load_scan;
+
+function onCloseButtonClicked(target) {
+    target.toggle();
 }
 
+m.onCloseButtonClicked = onCloseButtonClicked;
 
-function load_toc(event) {
+function load_toc_or_toggle(event) {
     event.preventDefault();
     var parentRecord = $(this).parents('div.record');
     var target = parentRecord.find('.context-detail');
     if (target.find('.scan-index-fcs-toc').length > 0)  
        { target.toggle(); }
-      else { 
+    else { m.load_toc.apply(this, [event])}
+}
+
+m.load_toc_or_toggle = load_toc_or_toggle;
+
+function load_toc(event) {
+    event.preventDefault();
+    var parentRecord = $(this).parents('div.record');
+    var target = parentRecord.find('.context-detail');
             //var targetRequest = $(this).attr('href') + " ul.resource";
             var targetRequest = $(this).attr('href');
             // a hack to have the correct element as target even though we are stripping the envelope of the response and just retrieve the inner list (ul.resource)    
@@ -299,18 +325,21 @@ function load_toc(event) {
     //var detailFragment = targetRequest + ' ' + search_container_selector;
         /*target.append("<div class='scan load-main' />");
         wrap = target.find(".scan");*/        
-        load_(target, targetRequest, function() {               
-                $(target).prepend("<span class='ui-icon ui-icon-close cmd_close' />");
-                close_button = $(target).find(".cmd_close");
-                     close_button.click(function() { target.toggle(); });
-                     
-                 // a hack to remove the top element (Work itself)    
-               var ul_resource = target.find('ul.resource');
-                target.find('.scan-index-fcs-toc').html('').append(ul_resource);
-            }        
-        );        
-      }
+        m.load_(target, targetRequest, function(){m.toc_loaded(target, event);});        
 }
+
+m.load_toc = load_toc;
+
+function toc_loaded(target, event) {               
+    $(target).prepend("<span class='ui-icon ui-icon-close cmd_close' />");
+    close_button = $(target).find(".cmd_close");
+    close_button.click(function(){m.onCloseButtonClicked(target)});                     
+    // a hack to remove the top element (Work itself)    
+    var ul_resource = target.find('ul.resource');
+    target.find('.scan-index-fcs-toc').html('').append(ul_resource);
+}
+
+m.toc_loaded = toc_loaded;
 
 /** run query via ajax 
   * read query-param from the form 
@@ -324,9 +353,10 @@ function query(event) {
     targetRequest = baseurl + '?' + $.param(params);
     cr_config.params["query"] = query;
     // persistentLink();    
-    load_(target, targetRequest + ' .result-header,.result-body', customizeIcons );
+    m.load_(target, targetRequest + ' .result-header,.result-body', m.customizeIcons );
 }
 
+m.query = query;
 
 /**
  * AJAX loading for the main container (middle column) = search
@@ -352,8 +382,10 @@ function load_main(event) {
     params["x-dataview"] = cr_config.main.dataview; //,xmlescaped
     targetRequest = baseurl + '?' + $.param(params);
     
-    load_(target,targetRequest, customizeIcons );
+    m.load_(target,targetRequest, m.customizeIcons );
 }
+
+m.load_main = load_main;
 
 function toggle_info(event) {
     toggle_navigation_data_views(this,event,'info')
@@ -414,7 +446,7 @@ function filter_default_nav_results(event) {
                 $(target).prepend("<span class='ui-icon ui-icon-close cmd_close' />");
                 close_button = $(target).find(".cmd_close");
                 close_button.click(function() { target.toggle(); });
-                customizeIcons();
+                m.customizeIcons();
 
                 target.find("ul").treeview({
       				collapsed: true,
@@ -451,10 +483,10 @@ function extract_header(){
         // move title above the tabbed box
         $('.detail-header').html($(this).find(".title"));
         // move navigation above tabbed box
-        $('.detail-header .title').after($(this).find(".navigation"));
+        $('.detail-header .title').after($(this).find(".data-view.navigation"));
         // debug; if released solve differently
         params["x-format"] = "xml";
-        $('.detail-header .navigation').after('<a class="navigation" href="' + baseurl + '?' + $.param(params) + '">&nbsp;FCS/XML&nbsp;</a>');
+        $('.detail-header .data-view.navigation').after('<a class="navigation" href="' + baseurl + '?' + $.param(params) + '">&nbsp;FCS/XML&nbsp;</a>');
         }
 
 /**
@@ -486,6 +518,8 @@ function load_context_details(event) {
     $(target).load(detailFragment);
 }
 
+m.load_context_details = load_context_details;
+
 function load_in_context_details(event) {
     event.preventDefault();
     var target = $(search_container_selector);
@@ -493,6 +527,8 @@ function load_in_context_details(event) {
     var detailFragment = targetRequest + ' ' + search_container_selector;
     $(target).load(detailFragment);
 }
+
+m.load_in_context_details = load_in_context_details;
 
 function customizeIcons () {
     $('.cmd_prev, .navigation .prev').addClass("ui-icon ui-icon-circle-triangle-w").removeClass("cmd prev cmd_prev");
@@ -506,7 +542,7 @@ function loading(targetContainer, startstop) {
 if (startstop=='start') {
     targetContainer.prepend("<span class='loading' >loading...</span>");
     var  loading = targetContainer.find(".loading"); 
-    loading.modernBlink({duration: '1500'});
+    loading.modernBlink('start');
    } else {
       var  loading = targetContainer.find(".loading");
       loading.remove();

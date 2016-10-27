@@ -18,15 +18,14 @@ this.MinimalTemplateDetail = m;
 
 function minimal_template_ui_setup() {
 // load detail
-    $('.result-body a').live("click", load_detail);
+    $(document).on("click", '.result-body a', load_detail);
         
-    $("#navigation .load-detail a").live('click', load_detail);
-    $('.result-body a').live("click", load_detail);
+    $(document).on("click", "#navigation .load-detail a", load_detail);
     // navigation links target:#detail itself
-    $('#detail .navigation a').live("click", load_detail);	   
+    $(document).on("click", '#detail .navigation a', load_detail);	   
                       
 // links inside the detail-view (person-links) target:#context-detail    
-    $('#detail .data-view.full a').live("click", function (event) {
+    $(document).on("click", '#detail .data-view.full a', function (event) {
         var detail = $('#detail');
         event.preventDefault();
          $('#detail a').removeClass("hilight");
@@ -40,10 +39,10 @@ function minimal_template_ui_setup() {
       });
 
 // navigation links target:#detail itself
-    $('#detail .navigation a').live("click", load_detail);
+    $(document).on("click", '#detail .navigation a', load_detail);
     
       
-      $('#context-detail a').live("click", function (event) {         
+      $(document).on("click", '#context-detail a', function (event) {         
          event.preventDefault();
          var target = $(search_container_selector);
          targetRequest = $(this).attr('href');
@@ -53,7 +52,7 @@ function minimal_template_ui_setup() {
       });
         
 // register filter
-        $("#left form").live('submit', function(event) {           
+        $(document).on("submit", "#left form", function(event) {           
            console.log ( $(this));
            var loadParent = $(this).parents('div.module');           
            var  loadParentID = loadParent.attr('id');
@@ -68,14 +67,14 @@ function minimal_template_ui_setup() {
          } );
 
 // register to search
-    $("#left a").live('click', function(event) {
+    $(document).on("click", "#left a", function(event) {
          event.preventDefault();
          var target = $('#main');
          targetRequest = $(this).attr('href');
          var detailFragment = targetRequest + ' ' + search_container_selector;         
          $(target).load(detailFragment);
          
-    });    
+    });   
 }
 
 $(minimal_template_ui_setup);
