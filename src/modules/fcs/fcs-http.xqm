@@ -50,8 +50,11 @@ import module namespace config="http://exist-db.org/xquery/apps/config" at "../.
 import module namespace diag =  "http://www.loc.gov/zing/srw/diagnostic/" at  "../diagnostics/diagnostics.xqm";
 
 declare function fcs-http:explain($x-context as xs:string*, $config, $context-mappings as item()+) as item()+ {
-   let $log := util:log-app("TRACE", $config:app-name, "explain http: $context-mapping/@url='"||data($context-mappings/@url)||"'"),
-       $url := $context-mappings/@url||'?version=1.2&amp;operation=explain'
+   let $log := util:log-app("DEBUG", $config:app-name, "explain http: $context-mapping/@url='"||data($context-mappings/@url)||"'"),
+       $url := 
+       if ($context-mappings/@type = 'noske') then
+          $context-mappings/@url||'?version=1.2&amp;operation=explain'
+       else $context-mappings/@url||'?version=1.2&amp;operation=explain&amp;x-context='||$x-context[1]
    return fcs-http:get-result-or-diag($url)
 };
 
@@ -60,7 +63,7 @@ declare function fcs-http:get-result-or-diag($url as xs:anyURI) as item()+ {
        $userPWSearch := '^(https?://)([^:@]+?:[^:@]+?)@(.*)$',
        $urlWithoutUserPW := replace($url, $userPWSearch, '$1$3'),
        $userPW := if ($url != $urlWithoutUserPW) then tokenize(replace($url, $userPWSearch, '$2'), ':') else (),
-       $log2 := (util:log-app("TRAGE", $config:app-name, "get-result-or-diag http: $urlWithoutUserPW := "||$urlWithoutUserPW||" $userPW := "||string-join($userPW, ':'))),
+       $log2 := (util:log-app("TRACE", $config:app-name, "get-result-or-diag http: $urlWithoutUserPW := "||$urlWithoutUserPW||" $userPW := "||string-join($userPW, ':'))),
        $response := try {httpclient:get($urlWithoutUserPW, false(), fcs-http:get-basic-auth-headers($userPW))} catch * {
        <hc:response statusCode="500">
          <hc:headers>
