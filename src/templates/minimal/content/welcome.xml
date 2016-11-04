@@ -9,7 +9,7 @@
         <li>It strictly separates between the logic, the layout, the data and the configuration</li>
         <li>The layout templates are maintained separately and can be reused (and customized) by the projects</li>
         <li>It supports project-specific overriding of any part of the template (html-snippets, js, css)</li>
-    </ul>  
+    </ul>
     <h3>How do I customize this page?</h3>
     <ul>
         <li>Create a static/content collection in your project folder.</li>

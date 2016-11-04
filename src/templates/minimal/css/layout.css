@@ -35,8 +35,8 @@ body {
 }
 
 #detail.content-part {    
-    /* where is that 1% used ?!*/
-    height: 99%;
+    /* where is that 2% used ?!*/
+    height: 98%;
 }
 
 .container-fluid {
