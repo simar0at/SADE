@@ -50,7 +50,7 @@ declare namespace aac = "urn:general";
 declare namespace mets="http://www.loc.gov/METS/";
 
 declare namespace xlink="http://www.w3.org/1999/xlink";
-
+import module namespace console="http://exist-db.org/xquery/console";
 import module namespace functx = "http://www.functx.com";
 import module namespace request="http://exist-db.org/xquery/request";
 import module namespace diag =  "http://www.loc.gov/zing/srw/diagnostic/" at  "../diagnostics/diagnostics.xqm";
@@ -224,7 +224,7 @@ declare function fcs-db:scan($x-context as xs:string, $index-name as xs:string, 
                                                                
                             default return (),
                             $mets-structMap-or-div := if (count($metsdivs) > 1) then <mets:structMap>{$metsdivs}</mets:structMap> else $metsdivs,
-                            $logRet := util:log-app("DEBUG", $config:app-name, "fcs-db:scan: $mets-structMap-or-div := "||substring(serialize($mets-structMap-or-div),1,240))
+                            $logRet := util:log-app("TRACE", $config:app-name, "fcs-db:scan: $mets-structMap-or-div := "||substring(serialize($mets-structMap-or-div),1,240))
                     (:let $map := 
 (\:                        if ($x-context= ('', 'default')) then 
                              doc(repo-utils:config-value($config, 'mappings')):\)
@@ -340,7 +340,7 @@ let $recurse-subsequence := if ($terms/sru:extraTermData/sru:terms/sru:term) the
                                             fcs-db:scan-subsequence($term/sru:extraTermData/sru:terms/sru:term, $start-term,$maximum-terms, $response-position, $x-filter)
                                             else ()
                                             (: only return term if it has any child terms (after filtering) :)
-                                return if (exists($children-subsequence)) then 
+                                return if (exists($children-subsequence) or exists($term/sru:extraTermData/*[not(local-name()='terms')]))  then 
                                           <sru:term>{($term/*[not(local-name()='extraTermData')],
                                          if ($term/sru:extraTermData) then (: if given term has extraTermData :)
                                                 <sru:extraTermData>
@@ -726,6 +726,10 @@ declare function fcs-db:term-to-label-from-xml-id($term as xs:string, $index as 
     let $referencedNode := fcs-db:get-referenced-node($firstOccurence),
         $log := util:log-app('TRACE', $config:app-name, 'fcs-db:term-to-label-from-xml-id $term := '||$term||', $index := '||$index||', $firstOccurence := '||substring(serialize($firstOccurence),1,240)||'...,  $referencedNode := '||substring(serialize($referencedNode),1,240)||'...'),
         $ret := if ($referencedNode) then index:apply-index($referencedNode, $index, $project-pid, 'label-only') else (),
+        $warn-if-more-than-one-term := if (count($possibleTerms) > 1) then
+           util:log-app('INFO' , $config:app-name, 'fcs-db:term-to-label-from-xml-id more than one possible term: '||string-join($possibleTerms, '; ')||'!')
+           else (),
+        $ret := $possibleTerms[1],
         $logRet := util:log-app('TRACE', $config:app-name, 'fcs-db:term-to-label-from-xml-id return '||$ret) 
     return $ret
 };
@@ -798,14 +802,16 @@ declare function fcs-db:search-retrieve($query as xs:string, $x-context as xs:st
                                         "x-highlight" := "off",
                                         "no-of-rf" := 1 
                                     }
-                                else 
-                                    $config,
-            $log := util:log-app("TRACE", $config:app-name, "fcs-db:search-retrieve $config instance of map() "||($config instance of map())), 
+                                else map {
+                                        "config" := $config,
+                                        "x-highlight" := request:get-parameter('x-highlight', '')
+                                    },
+            $log := util:log-app("TRACE", $config:app-name, "fcs:search-retrieve $config instance of map() "||($config instance of map())), 
             $result-seq-expanded := if (not($config-param instance of map()) or $config-param("x-highlight") != "off") then
-               let $log := util:log-app("DEBUG", $config:app-name, "fcs-db:search-retrieve x-highlight = on")
+               let $log := util:log-app("TRACE", $config:app-name, "fcs-db:search-retrieve x-highlight = on")
                return util:expand($result-seq)
             else
-               let $log := util:log-app("DEBUG", $config:app-name, "fcs-db:search-retrieve x-highlight = off")
+               let $log := util:log-app("TRACE", $config:app-name, "fcs-db:search-retrieve x-highlight = off")
                return $result-seq
        
              let $records :=
@@ -1263,12 +1269,14 @@ declare %private function fcs-db:remove-offset-from-match-id-if-exists($match-id
     (:if (matches($match-id,':\d+:\d+$')) then :)replace($match-id,':\d+:\d+.*$','')(: else $match-id:)    
 };
 
+(: do not call this if you have no offset or be prepared to catch the exception err:FORG0001 :)
 declare %private function fcs-db:get-offset-from-mactch-id($match-id as xs:string) as xs:integer {
-    replace($match-id,'^[^:]+:(\d+):(\d+):?(.*)$','$1')
+    xs:integer(replace($match-id,'^[^:]+:(\d+):(\d+):?(.*)$','$1'))
 };
 
+(: do not call this if you have no length or be prepared to catch the exception err:FORG0001 :)
 declare %private function fcs-db:get-match-length-from-mactch-id($match-id as xs:string) as xs:integer {
-    replace($match-id,'^[^:]+:(\d+):(\d+):?(.*)$','$2') 
+    xs:integer(replace($match-id,'^[^:]+:(\d+):(\d+):?(.*)$','$2')) 
 };
 
 declare %private function fcs-db:get-match-rfpid($match-ids as xs:string*) as xs:string* {
@@ -1359,6 +1367,7 @@ declare function fcs-db:recalculate-offset-for-match-ids-on-page-split($match-id
              $warn := if (count($matching-rfs-parts) > 2) then util:log-app('TRACE',$config:app-name,"fcs-db:recalculate-offset-match-ids-on-page-split warning: more than 2 matching rfs: "||$match-id-without-offset) else (),
              $log := util:log-app("TRACE",$config:app-name,"fcs-db:recalculate-offset-for-match-ids-on-page-split $match-id-splitted = "||$match-id-splitted)
          return
+            try {
             if (not($match-id-splitted)) then (: add rfpids only to offset+length matches :)
                if (matches($m, '^[^:]+:(\d+):(\d+).*$')) then $m||':'||$matching-rfs-parts/ancestor::fcs:resourceFragment/@resourcefragment-pid
                else $m||":1:"||string-length($matching-rfs-parts)||":"||$matching-rfs-parts/ancestor::fcs:resourceFragment/@resourcefragment-pid
@@ -1377,6 +1386,7 @@ declare function fcs-db:recalculate-offset-for-match-ids-on-page-split($match-id
                       ":"||fcs-db:get-match-length-from-mactch-id($m)||":"||$rfpids[$i],
                 $log2 := util:log-app("TRACE",$config:app-name,"fcs-db:recalculate-offset-for-match-ids-on-page-split $new-matches = "||string-join($new-matches, '; '))
             return $new-matches
+            } catch err:FORG0001 { for $p in $matching-rfs-parts return $p/ancestor::fcs:resourceFragment/@resourcefragment-pid }
         )
    let $logRet := util:log-app("TRACE",$config:app-name,"fcs-db:recalculate-offset-for-match-ids-on-page-split return "||string-join($ret, '; '))
    return $ret
