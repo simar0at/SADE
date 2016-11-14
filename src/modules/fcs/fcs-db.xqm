@@ -1088,10 +1088,14 @@ declare function fcs-db:format-record-data($orig-sequence-record-data as node(),
                           then xs:integer(config:param-value($config,"rf.window")) 
                           else 1
         
-        let $rf-window-prev := for $rfp in reverse(subsequence(reverse($rf-entry/preceding-sibling::mets:div[@TYPE = $config:PROJECT_RESOURCEFRAGMENT_DIV_TYPE]),1,$rf-window)) 
+        let $prec-rfs := count($rf-entry/preceding-sibling::mets:div[@TYPE = $config:PROJECT_RESOURCEFRAGMENT_DIV_TYPE]),
+            $foll-rfs := count($rf-entry/following-sibling::mets:div[@TYPE = $config:PROJECT_RESOURCEFRAGMENT_DIV_TYPE]),
+            $foll-rf-window := if ($prec-rfs < $rf-window) then $rf-window + ($rf-window - $prec-rfs) else $rf-window,
+            $prec-rf-window := if ($foll-rfs < $rf-window) then $rf-window + ($rf-window - $foll-rfs) else $rf-window
+        let $rf-window-prev := for $rfp in reverse(subsequence(reverse($rf-entry/preceding-sibling::mets:div[@TYPE = $config:PROJECT_RESOURCEFRAGMENT_DIV_TYPE]),1,$prec-rf-window)) 
                                return rf:get($rfp/@ID,$resource-pid,$project-id)/*
                                 
-        let $rf-window-next := for $rfp in subsequence($rf-entry/following-sibling::mets:div[@TYPE = $config:PROJECT_RESOURCEFRAGMENT_DIV_TYPE],1,$rf-window) 
+        let $rf-window-next := for $rfp in subsequence($rf-entry/following-sibling::mets:div[@TYPE = $config:PROJECT_RESOURCEFRAGMENT_DIV_TYPE],1,$foll-rf-window) 
                                 return rf:get($rfp/@ID,$resource-pid,$project-id)/*
         
          let $debug :=   <fcs:DataView type="debug" count="{count($rf)}" matchids="{$matches-to-highlight}">{$record-data-highlighted}</fcs:DataView>
@@ -1143,18 +1147,27 @@ declare function fcs-db:format-record-data($orig-sequence-record-data as node(),
                                                      $prev-next-scan//sru:terms/sru:term[2]/sru:value
                                                 else "" 
                               :)
-                              let $rf-prev := $rf-entry/preceding-sibling::mets:div[@TYPE = $config:PROJECT_RESOURCEFRAGMENT_DIV_TYPE][1]
-                              let $rf-next := $rf-entry/following-sibling::mets:div[@TYPE = $config:PROJECT_RESOURCEFRAGMENT_DIV_TYPE][1]
-                              let $log:= util:log-app("TRACE",$config:app-name,("$rf-entry := ",$rf-entry))
-                              let $log:= util:log-app("TRACE",$config:app-name,("$rf-prev := ",$rf-prev))
-                              let $log:= util:log-app("TRACE",$config:app-name,("$rf-next := ",$rf-next))
+                              (: Just going beyond the end of these preceding-sibling:: or following-sibling:: sequences leads to a null pointer exception :) 
+                              let $rfs-prec := reverse($rf-entry/preceding-sibling::mets:div[@TYPE = $config:PROJECT_RESOURCEFRAGMENT_DIV_TYPE]),
+                                  $rf-prev := $rfs-prec[1],
+                                  $rf-prev-screen := if (count($rfs-prec) lt $prec-rf-window + $rf-window) then () else $rfs-prec[$prec-rf-window + $rf-window]
+                              let $rfs-foll := $rf-entry/following-sibling::mets:div[@TYPE = $config:PROJECT_RESOURCEFRAGMENT_DIV_TYPE],
+                                  $rf-next := $rfs-foll[1],
+                                  $rf-next-screen := if (count($rfs-foll) lt $foll-rf-window + $rf-window) then () else $rfs-foll[$foll-rf-window + $rf-window]
+                              let $log:= util:log-app("DEBUG",$config:app-name,"$rf-entry := "||substring(serialize($rf-entry), 1, 240)||
+                                                                              " $rf-prev := "||substring(serialize($rf-prev), 1, 240)||
+                                                                              " $rf-next := "||substring(serialize($rf-next), 1, 240))   
         
                               
-                              let $rf-prev-ref := if (exists($rf-prev)) then concat('?operation=searchRetrieve&amp;query=', $config:INDEX_INTERNAL_RESOURCEFRAGMENT, '="', xmldb:encode-uri($rf-prev/data(@ID)), '"&amp;x-dataview=full&amp;x-dataview=navigation&amp;x-context=', $x-context) else ""                                                 
-                              let $rf-next-ref:= if (exists($rf-next)) then concat('?operation=searchRetrieve&amp;query=', $config:INDEX_INTERNAL_RESOURCEFRAGMENT, '="', xmldb:encode-uri($rf-next/data(@ID)), '"&amp;x-dataview=full&amp;x-dataview=navigation&amp;x-context=', $x-context) else ""
+                              let $rf-prev-ref := fcs-db:generate-rf-ref($rf-prev, $x-context),
+                                  $rf-prev-screen-ref := fcs-db:generate-rf-ref($rf-prev-screen, $x-context)
+                              let $rf-next-ref:= fcs-db:generate-rf-ref($rf-next, $x-context),
+                                  $rf-next-screen-ref := fcs-db:generate-rf-ref($rf-next-screen, $x-context)
                                return
-                                 ( if ($rf-prev-ref ne "") then <fcs:ResourceFragment type="prev" pid="{$rf-prev/data(@ID)}" ref="{$rf-prev-ref}" label="{$rf-prev/data(@LABEL)}"  /> else (),
-                                   if ($rf-next-ref ne "") then <fcs:ResourceFragment type="next" pid="{$rf-next/data(@ID)}" ref="{$rf-next-ref}" label="{$rf-next/data(@LABEL)}"  /> else ())
+                                 ( fcs-db:generate-prev-next-rf($rf-prev-screen, 'prev', $rf-prev-screen-ref),
+                                   fcs-db:generate-prev-next-rf($rf-prev, 'prev', $rf-prev-ref),
+                                   fcs-db:generate-prev-next-rf($rf-next, 'next', $rf-next-ref),
+                                   fcs-db:generate-prev-next-rf($rf-next-screen, 'next', $rf-next-screen-ref))
                             else ()
                             
         let $dv-facs :=     if (contains($data-view,'facs')) 
@@ -1165,13 +1178,13 @@ declare function fcs-db:format-record-data($orig-sequence-record-data as node(),
         				    else ()
         let $dv-facs-prev := if (($rf-window gt 1) and contains($data-view,'facs') and contains($data-view,'full')) 
                             then 
-                            for $rfp in reverse(subsequence(reverse($rf-entry/preceding-sibling::mets:div[@TYPE = $config:PROJECT_RESOURCEFRAGMENT_DIV_TYPE]),1,$rf-window))
+                            for $rfp in reverse(subsequence(reverse($rf-entry/preceding-sibling::mets:div[@TYPE = $config:PROJECT_RESOURCEFRAGMENT_DIV_TYPE]),1,$prec-rf-window))
                                 let $facs-uri := facs:get-url($rfp/@ID, $resource-pid, $project-id)
         				        return <fcs:DataView type="facs" ref="{$facs-uri[1]}"/>
         				    else ()
                                 
         let $dv-facs-next := if (($rf-window gt 1) and contains($data-view,'facs') and contains($data-view,'full')) 
-                            then for $rfp in subsequence($rf-entry/following-sibling::mets:div[@TYPE = $config:PROJECT_RESOURCEFRAGMENT_DIV_TYPE],1,$rf-window)
+                            then for $rfp in subsequence($rf-entry/following-sibling::mets:div[@TYPE = $config:PROJECT_RESOURCEFRAGMENT_DIV_TYPE],1,$foll-rf-window)
                                 let $facs-uri := facs:get-url($rfp/@ID, $resource-pid, $project-id)
         				        return <fcs:DataView type="facs" ref="{$facs-uri[1]}"/>
         				    else ()
@@ -1186,7 +1199,7 @@ declare function fcs-db:format-record-data($orig-sequence-record-data as node(),
                            else ()
         
         let $dv-xmlescaped := if (contains($data-view,'xmlescaped')) 
-                              then <fcs:DataView type="xmlescaped">{util:serialize($record-data-highlighted,'method=xml, indent=yes')}</fcs:DataView>
+                              then <fcs:DataView type="xmlescaped">{util:serialize(fcs-db:remove-cr-attrs($record-data-highlighted)/fcs:resourceFragment,'method=xml, indent=yes')}</fcs:DataView>
                               else ()
         
         (:return if ($data-view = 'raw') then $record-data 
@@ -1223,7 +1236,13 @@ declare function fcs-db:format-record-data($orig-sequence-record-data as node(),
                                             case "navigation"   return $dv-navigation
                                             case "xmlescaped"   return $dv-xmlescaped
                                             default             return ()
-                             return if ($data instance of element(fcs:DataView)) then $data else <fcs:DataView type="{$d}">{$data}</fcs:DataView>
+                             return if ($data instance of element(fcs:DataView)) then $data else
+                             <fcs:DataView type="{$d}">{                             
+                                 if ($rf-window gt 1) then attribute cr:actResId {$record-data-highlighted[1]/*/*/@cr:id} else (),
+                                 attribute cr:totalNumOfFrags {count($rf-entry/../mets:div[@TYPE = $config:PROJECT_RESOURCEFRAGMENT_DIV_TYPE])},
+                                 attribute cr:currentFragNum {count($rf-entry/preceding-sibling::mets:div[@TYPE = $config:PROJECT_RESOURCEFRAGMENT_DIV_TYPE]) + 1},
+                                 $data}
+                             </fcs:DataView>
                     }</fcs:ResourceFragment>
                      else 
                          for $d in tokenize($data-view,',\s*') 
@@ -1241,6 +1260,31 @@ declare function fcs-db:format-record-data($orig-sequence-record-data as node(),
                                  return if ($data instance of element(fcs:DataView)) then $data else <fcs:DataView type="{$d}">{$data}</fcs:DataView>
                      }
                 </fcs:Resource>
+};
+
+declare %private function fcs-db:generate-rf-ref($rf as element()?, $x-context as xs:string) as xs:string {
+    if (exists($rf)) then concat('?operation=searchRetrieve&amp;query=', 
+                                 $config:INDEX_INTERNAL_RESOURCEFRAGMENT, '="',
+                                 xmldb:encode-uri($rf/data(@ID)),
+                                 '"&amp;x-dataview=full&amp;x-dataview=navigation&amp;x-context=', $x-context)
+    else ""
+};
+
+declare %private function fcs-db:generate-prev-next-rf($rf as element()?, $type as xs:string, $ref as xs:string) as element(fcs:ResourceFragment)? {
+    if (exists($rf)) then 
+        <fcs:ResourceFragment type="{$type}" pid="{$rf/data(@ID)}" ref="{$ref}" label="{$rf/data(@LABEL)}"/> 
+    else ()
+};
+
+declare %private function fcs-db:remove-cr-attrs($element as element()) as element() {
+   element {node-name($element)}
+      {$element/@* except $element/@cr:*,
+          for $child in $element/node()
+              return
+               if ($child instance of element())
+                 then fcs-db:remove-cr-attrs($child)
+                 else $child
+      }
 };
 
 declare %private function fcs-db:get-rfs-xml($expanded-record-data-input as node(), $project-id as xs:string, $resource-pid as xs:string, $resourcefragment-pids as xs:string*, $match-ids as xs:string*, $config as item()*) as item()+ {
