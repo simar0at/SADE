@@ -126,7 +126,7 @@ declare function fcs:main($config) as item()* {
           <param name="sort" value="{request:get-parameter("sort", ())}"/>
         </parameters> else () 
    return  repo-utils:serialise-as($result, $x-format, $operation, $config, $x-context, $xslParams)
-   
+    
 };
 
 
@@ -136,7 +136,7 @@ declare function fcs:main($config) as item()* {
 :)
 declare function fcs:explain($x-context as xs:string*, $config) as item() {
     
-    let $log := util:log-app("DEBUG", $config:app-name, "explain switch: x-context="||$x-context),
+    let $log := util:log-app("TRACE", $config:app-name, "explain switch: x-context="||$x-context),
         $context-mapping := index:map($x-context)
     return
        if (exists($context-mapping/@url)) then
@@ -188,7 +188,7 @@ declare function fcs:scan($scan-clause as xs:string, $x-context as xs:string+, $
       ),
       $context-mapping := index:map($x-context),
       $sort-or-default := ($sort, $context-mapping//index[@key = $index-name]/@sort)[1],
-      $log2 := util:log-app("DEBUG", $config:app-name, "$sort-or-default="||$sort-or-default)
+      $log2 := util:log-app("TRACE", $config:app-name, "$sort-or-default="||$sort-or-default)
    return
      if (exists($context-mapping/@url)) then
        fcs-http:scan($x-context, $index-name, $start-term, xs:integer($max-terms), xs:integer($response-position), xs:integer($max-depth), $x-filter, $p-sort, $mode, $config, $context-mapping)
@@ -258,13 +258,13 @@ declare function fcs:search-retrieve($query as xs:string, $x-context as xs:strin
   let $error-in-parameters := fcs:check-searchRetrieve-parameters-and-return-error($query, $recordPacking, $maximumRecords, $startRecord)
   return if (exists($error-in-parameters)) then $error-in-parameters
   else
-  let $log := (util:log-app("DEBUG", $config:app-name, "query="||$query),
-               util:log-app("DEBUG", $config:app-name, "x-context="||$x-context),
-               util:log-app("DEBUG", $config:app-name, "startRecord="||$startRecord),
-               util:log-app("DEBUG", $config:app-name, "maximumRecords="||$maximumRecords),
-               util:log-app("DEBUG", $config:app-name, "x-dataview="||$x-dataview),
-               util:log-app("DEBUG", $config:app-name, "recordPacking="||$recordPacking),
-               if (exists($queryType)) then util:log-app("DEBUG", $config:app-name, "queryType="||$queryType) else ()
+  let $log := (util:log-app("TRACE", $config:app-name, "query="||$query),
+               util:log-app("TRACE", $config:app-name, "x-context="||$x-context),
+               util:log-app("TRACE", $config:app-name, "startRecord="||$startRecord),
+               util:log-app("TRACE", $config:app-name, "maximumRecords="||$maximumRecords),
+               util:log-app("TRACE", $config:app-name, "x-dataview="||$x-dataview),
+               util:log-app("TRACE", $config:app-name, "recordPacking="||$recordPacking),
+               if (exists($queryType)) then util:log-app("TRACE", $config:app-name, "queryType="||$queryType) else ()
       ), $context-mapping := index:map($x-context)
   return
     if (exists($context-mapping/@url)) then

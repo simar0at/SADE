@@ -725,7 +725,7 @@ This may not scale very well so cached indexes are used here to speed up further
 declare function fcs-db:term-to-label-from-xml-id($term as xs:string, $index as xs:string, $project-pid as xs:string, $firstOccurence as node()) as xs:string? {
     let $referencedNode := fcs-db:get-referenced-node($firstOccurence),
         $log := util:log-app('TRACE', $config:app-name, 'fcs-db:term-to-label-from-xml-id $term := '||$term||', $index := '||$index||', $firstOccurence := '||substring(serialize($firstOccurence),1,240)||'...,  $referencedNode := '||substring(serialize($referencedNode),1,240)||'...'),
-        $ret := if ($referencedNode) then index:apply-index($referencedNode, $index, $project-pid, 'label-only') else (),
+        $possibleTerms := if ($referencedNode) then index:apply-index($referencedNode, $index, $project-pid, 'label-only') else (),
         $warn-if-more-than-one-term := if (count($possibleTerms) > 1) then
            util:log-app('INFO' , $config:app-name, 'fcs-db:term-to-label-from-xml-id more than one possible term: '||string-join($possibleTerms, '; ')||'!')
            else (),
