@@ -70,7 +70,7 @@ declare function fcs-http:get-result-or-diag($url as xs:anyURI) as item()+ {
            <hc:header name="Content-Type" value="text/plain; charset=iso-8859-1"/>
          </hc:headers>
          <hc:body>
-           {$err:code}: {$err:description}
+           fcs-http:get-result-or-diag: {$err:code}: {$err:description}
          </hc:body>
        </hc:response>},
        $logResp := (util:log-app("TRACE", $config:app-name, "get-result-or-diag http: $response statusCode:"||$response/@statusCode),
@@ -127,7 +127,7 @@ declare function fcs-http:get-query-for-scan($x-context as xs:string, $index-nam
        '&amp;scanClause='||$index-name||'='||escape-uri($start-term, true())||
        '&amp;maximumTerms='||$max-terms||
        '&amp;responsePosition='||$response-position||
-       '&amp;x-filter='||$x-filter
+       '&amp;x-filter='||escape-uri($x-filter, true())
     else
        '?version=1.2&amp;operation=scan&amp;x-context='||$x-context||
        '&amp;scanClause='||$index-name||'='||escape-uri($start-term, true())||
