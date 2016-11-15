@@ -148,7 +148,7 @@ function load_detail_data(targetRequest) {
                         // get rid-off the links
                         $('#tabs-1').find('a').replaceWith(function(){  return $(this).contents();});
                         */
-                        m.onDetailDataLoaded();                        
+                        m.onDetailDataLoaded.call(this);                        
                       });
 }
 
