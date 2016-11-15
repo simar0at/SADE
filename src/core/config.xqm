@@ -404,9 +404,9 @@ declare function config:resolve-template-to-uri($model as map(*), $relPath as xs
                         $project-static-baseuri||$relPath,
                         $project-data-baseuri||$relPath,
                         $template-baseuri||$relPath,
-                        $config:app-root-collection||$relPath),
-        $log2 := (util:log-app("TRACE",$config:app-name,"$dirs = "||serialize($dirs)),
-                 util:log-app("TRACE",$config:app-name,"$base-uris = "||serialize($base-uris)))
+                        $config:app-root-collection||$relPath)(:,
+        $log2 := (util:log-app("TRACE",$config:app-name,"$dirs = "||string-join($dirs, '; ')),
+                 util:log-app("TRACE",$config:app-name,"$base-uris = "||string-join($base-uris, '; '))):)
     return
         let $available:=
             for $i at $pos in $dirs 
@@ -618,7 +618,8 @@ declare function config:param-value($node as node()*, $model, $module-key as xs:
             case "projects-baseuri"         return $config-params:projects-baseuri            
             case "shib-user-pwd"            return $config-params:shib-user-pwd
             case "request-uri"              return xs:string(request:get-uri())
-            case "base-url"                 return repo-utils:base-url($config)
+            case "base-url-public"          return repo-utils:base-url($config)
+            case "base-url"                 return repo-utils:base-url($config)(:'http://localhost:8080'||repo-utils:base-uri($config):)
             case $config:PROJECT_PID_NAME   return $mets/xs:string(@OBJID)
             case "project-dir"              return util:collection-name($config[self::mets:mets])||"/"
             case "project-static-dir"       return 
