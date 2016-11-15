@@ -50,7 +50,7 @@ import module namespace config="http://exist-db.org/xquery/apps/config" at "../.
 import module namespace diag =  "http://www.loc.gov/zing/srw/diagnostic/" at  "../diagnostics/diagnostics.xqm";
 
 declare function fcs-http:explain($x-context as xs:string*, $config, $context-mappings as item()+) as item()+ {
-   let $log := util:log-app("DEBUG", $config:app-name, "explain http: $context-mapping/@url='"||data($context-mappings/@url)||"'"),
+   let $log := util:log-app("TRACE", $config:app-name, "explain http: $context-mapping/@url='"||data($context-mappings/@url)||"'"),
        $url := 
        if ($context-mappings/@type = 'noske') then
           $context-mappings/@url||'?version=1.2&amp;operation=explain'
@@ -59,7 +59,7 @@ declare function fcs-http:explain($x-context as xs:string*, $config, $context-ma
 };
 
 declare function fcs-http:get-result-or-diag($url as xs:anyURI) as item()+ {
-   let $log := (util:log-app("DEBUG", $config:app-name, "get-result-or-diag http: GET: "||$url)), 
+   let $log := (util:log-app("TRACE", $config:app-name, "get-result-or-diag http: GET: "||$url)), 
        $userPWSearch := '^(https?://)([^:@]+?:[^:@]+?)@(.*)$',
        $urlWithoutUserPW := replace($url, $userPWSearch, '$1$3'),
        $userPW := if ($url != $urlWithoutUserPW) then tokenize(replace($url, $userPWSearch, '$2'), ':') else (),
@@ -85,7 +85,7 @@ declare function fcs-http:get-result-or-diag($url as xs:anyURI) as item()+ {
         util:base64-decode($response/(hc:body|xhc:body)/text())
       else 
         $response/(hc:body|xhc:body)/*,
-       $retLog := util:log-app("DEBUG", $config:app-name, "get-result-or-diag http: return: "||substring(serialize($ret), 1, 1000))      
+       $retLog := util:log-app("TRACE", $config:app-name, "get-result-or-diag http: return: "||substring(serialize($ret), 1, 1000))      
    return $ret
 };
 
@@ -115,7 +115,7 @@ declare function fcs-http:get-query-for-scan($x-context as xs:string, $index-nam
                           $max-terms as xs:integer, $response-position as xs:integer, $max-depth as xs:integer,
                           $x-filter as xs:string, $sort as xs:string?, $mode as xs:string,
                           $config, $context-mappings as item()+) as xs:string {
-    let $log := util:log-app("DEBUG", $config:app-name, "get-query: type "||$context-mappings/@type)
+    let $log := util:log-app("TRACE", $config:app-name, "get-query: type "||$context-mappings/@type)
     return
     if ($context-mappings/@type = 'noske') then
        '?version=1.2&amp;operation=scan'||
@@ -150,7 +150,7 @@ declare function fcs-http:get-query-for-searchRetrieve($query as xs:string, $x-c
                                      $x-dataview as xs:string*, $recordPacking as xs:string, $queryType as xs:string?,
                                      $config, $context-mappings as item()+) as item()+ {
     let $queryTypeParam := if (exists($queryType)) then '&amp;queryType='||$queryType else (),
-        $log := util:log-app("DEBUG", $config:app-name, "get-query: type "||$context-mappings/@type)
+        $log := util:log-app("TRACE", $config:app-name, "get-query: type "||$context-mappings/@type)
     return
     if ($context-mappings/@type = 'noske') then
        '?version=1.2&amp;operation=searchRetrieve'||
