@@ -739,8 +739,8 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
 	       return $res
 	   default return
 	       let $option := util:declare-option("exist:serialize", "method=xml media-type=application/xml")
-	       return $item,
-(:	   $logRet := util:log-app('TRACE', $config:app-name, 'repo-utils:serialise-as return '||string-join((for $r in $ret return substring(serialize($r), 1, 240)), '; ')) :)
+	       return $item(:, 
+	   $logRet := util:log-app('TRACE', $config:app-name, 'repo-utils:serialise-as return '||string-join((for $r in $ret return substring(serialize($r), 1, 240)), '; ')) :)
 	   return $ret
 };
 
@@ -784,7 +784,7 @@ declare function repo-utils:xsl-doc($operation as xs:string, $format as xs:strin
                                     )
                             case (doc-available($operation-xsl)) return 
                                 (util:log-app("TRACE",$config:app-name,"repo-utils:xsl-doc found xsl-doc "||$operation-xsl||" for operation "||$operation||", format "||$format),doc($operation-xsl))
-                            default return util:log-app("TRACE",$config:app-name,"repo-utils:xsl-doc: Could not find xsl-doc "||$operation-xsl||" for operation "||$operation||", format "||$format)
+                            default return util:log-app("TRACE",$config:app-name,"repo-utils:xsl-doc: Could not find xsl-doc "||$operation-xsl||" for operation "||$operation||", format "||$format),
         $ret := ($xsldoc)[1],
         $logRet := util:log-app("TRACE",$config:app-name,"repo-utils:xsl-doc return "||base-uri($ret))
     return $ret
