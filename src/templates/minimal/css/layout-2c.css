@@ -14,11 +14,13 @@
         padding-right: 0.5em;
         float: left;
         width: 24%;
+        height: 100%
     }
 
     #navigation {        
         float: left;
         width: 24%;
+        height: 100%;
     }
 
     #detail.content-part { 
