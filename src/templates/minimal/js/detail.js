@@ -6,6 +6,8 @@ var m = {},
     baseurl = MinimalTemplateMain.getBaseURL(),
     cr_config = MinimalTemplateMain.getCrConfig();
     
+    m.detail_container_selector = '#detail';
+    
 //export
 
 this.MinimalTemplateDetail = m;
@@ -24,32 +26,12 @@ function minimal_template_ui_setup() {
     // navigation links target:#detail itself
     $(document).on("click", '#detail .navigation a', load_detail);	   
                       
-// links inside the detail-view (person-links) target:#context-detail    
-    $(document).on("click", '#detail .data-view.full a', function (event) {
-        var detail = $('#detail');
-        event.preventDefault();
-         $('#detail a').removeClass("hilight");
-         $(this).addClass("hilight");
-         var target = $('#context-detail');
-         detail.find('.navi').toggleClass("cmd_get");
-         targetRequest = baseurl + $(this).attr('href');
-         var detailFragment = targetRequest + " .title,.person";
-         
-         $(target).load(detailFragment);         
-      });
+
+    // links inside the detail-view (person-links) target:#context-detail
+    $(document).on("click", '#detail .data-view.full a', load_context_details);
 
 // navigation links target:#detail itself
     $(document).on("click", '#detail .navigation a', load_detail);
-    
-      
-      $(document).on("click", '#context-detail a', function (event) {         
-         event.preventDefault();
-         var target = $(search_container_selector);
-         targetRequest = $(this).attr('href');
-         var detailFragment = targetRequest + ' ' + search_container_selector;
-         
-         $(target).load(detailFragment);         
-      });
         
 // register filter
         $(document).on("submit", "#left form", function(event) {           
@@ -78,8 +60,23 @@ function minimal_template_ui_setup() {
 }
 
 $(minimal_template_ui_setup);
-    
-/**
+
+function load_context_details(event) {
+    var detail = $(m.detail_container_selector);
+    event.preventDefault();
+    $(m.detail_container_selector +' a').removeClass("hilight");
+    $(this).addClass("hilight");
+    var target = $('#context-detail');
+    detail.find('.navi').toggleClass("cmd_get");
+    targetRequest = baseurl + $(this).attr('href');
+    var detailFragment = targetRequest + " .title, .person";
+
+    $(target).load(detailFragment);
+}
+
+m.load_context_details = load_context_details;
+
+ /**
  * On an a-elemet click load details. Use the href attribute but request navigation statements
  * to be generated
  */
@@ -151,6 +148,8 @@ function load_detail_data(targetRequest) {
                         m.onDetailDataLoaded.call(this);                        
                       });
 }
+
+m.load_detail_data = load_detail_data;
 
 MinimalTemplateMain.doLoadDetailData = load_detail_data;
 

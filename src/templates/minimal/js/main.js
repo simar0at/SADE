@@ -152,10 +152,8 @@ function minimal_template_ui_setup() {
 
     $(document).on("click", '.result-header a', m.load_main);
     $(document).on("click", "#navigation .indexes .scan a", m.load_main);
-    // links inside the detail-view (person-links) target:#context-detail
-    $(document).on("click", '#detail .data-view.full a', m.load_context_details);
-
-    $(document).on("click", '#context-detail a', m.load_in_context_details);
+        
+    $(document).on("click", '#context-detail a', load_in_context_details);
 
     // customize icons (from generic 
     m.customizeIcons();
@@ -503,22 +501,6 @@ function create_unannotated_text_in(anotherTab) {
         return $(this).contents();
     });
 }
-
-
-function load_context_details(event) {
-    var detail = $('#detail');
-    event.preventDefault();
-    $('#detail a').removeClass("hilight");
-    $(this).addClass("hilight");
-    var target = $('#context-detail');
-    detail.find('.navi').toggleClass("cmd_get");
-    targetRequest = baseurl + $(this).attr('href');
-    var detailFragment = targetRequest + " .title, .person";
-
-    $(target).load(detailFragment);
-}
-
-m.load_context_details = load_context_details;
 
 function load_in_context_details(event) {
     event.preventDefault();
