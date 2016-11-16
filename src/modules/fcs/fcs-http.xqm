@@ -163,13 +163,14 @@ declare function fcs-http:get-query-for-searchRetrieve($query as xs:string, $x-c
     else if ($context-mappings/@type = 'cr-xq-mets') then
        '?version=1.2&amp;operation=searchRetrieve&amp;x-context='||$x-context||
        '&amp;query='||escape-uri($query, true())||
-       '&amp;maximumTerms='||$startRecord||
+       '&amp;startRecord='||$startRecord||
        '&amp;maximumRecords='||$maximumRecords||
        '&amp;x-dataview='||$x-dataview||
-       '&amp;recordPacking='||$recordPacking
+       '&amp;recordPacking='||$recordPacking||
+       $queryTypeParam
     else
        '?version=1.2&amp;operation=searchRetrieve&amp;x-context='||$x-context||
        '&amp;query='||escape-uri($query, true())||
-       '&amp;maximumTerms='||$startRecord||
+       '&amp;startRecord='||$startRecord||
        '&amp;maximumRecords='||$maximumRecords                                 
 };
