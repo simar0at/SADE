@@ -34,6 +34,7 @@ import module namespace repo-utils = "http://aac.ac.at/content_repository/utils"
 import module namespace fcsm = "http://clarin.eu/fcs/1.0" at "fcs.xqm";
 
 declare namespace cmd = "http://www.clarin.eu/cmd/";
+declare namespace xhtml = "http://www.w3.org/1999/xhtml";
 
 (:declare variable $app:SESSION := "shakespeare:results";:)
 (:declare variable $fcs:config := repo-utils:config("/db/cr/conf/mdrepo/config.xml");:)
@@ -100,6 +101,16 @@ function fcs:query($node as node()*, $model as map(*), $query as xs:string?, $x-
      
 };
 
+declare 
+    %templates:wrap
+    %templates:default("x-context","")
+    %templates:default("x-dataview","title,kwic")
+    %templates:default("startRecord",1)
+    %templates:default("maximumRecords",10)  
+function fcs:query-for-result-header-and-body($node as node()*, $model as map(*), $query as xs:string?, $x-context as xs:string*, $x-dataview as xs:string*, $x-format as xs:string?, $startRecord as xs:integer, $maximumRecords as xs:integer, $base-path as xs:string?) {
+   let $query := fcs:query($node, $model, $query, $x-context, $x-dataview, 'html', $startRecord, $maximumRecords, $base-path)
+   return $query//xhtml:div[contains(@class, 'result-header') or contains(@class, 'result-body')]
+};
 
 (:~ invokes the scan-function of the fcs-module
 tries to use x-context parameter from the configuration, if no explicit x-context was given
@@ -122,7 +133,7 @@ $x-context as xs:string*, $x-format as xs:string?, $base-path as xs:string?) {
         $log := util:log-app("TRACE", $config:app-name, "SADE fcs:scan $x-context-x := "||$x-context-x||", $scan := "||substring(serialize($scan),1,240)||"..."),
         $params := <parameters>
                         <param name="format" value="{$x-format}"/>
-                  		<param name="base_url" value="{config:param-value($model,'base-url')}"/>
+                  		<param name="base_url" value="{concat(config:param-value($model,'base-url'),'fcs')}"/>
                   		{if ($sort != '') then <param name="sort" value="{$sort}"/> else ()}	         
               			<param name="x-context" value="{$x-context-x}"/>             			            
                   </parameters>,
@@ -145,7 +156,7 @@ function fcs:explain($node as node()*, $model as map(*), $x-context as xs:string
         $log := util:log-app("TRACE", $config:app-name, "SADE fcs:explain $x-context-x := "||$x-context-x||", $explain := "||substring(serialize($explain),1,240)||"..."),
         $transformParams := <parameters>
                                <param name="format" value="{$x-format}"/>
-                  		       <param name="base_url" value="{config:param-value($model,'base-url')}"/>	         
+                  		       <param name="base_url" value="{concat(config:param-value($model,'base-url'),'fcs')}"/>	         
               			       <param name="x-context" value="{$x-context-x}"/>             			            
                             </parameters>,
         $ret := repo-utils:serialise-as($explain, $x-format, 'explain', $model("config"), $transformParams),
