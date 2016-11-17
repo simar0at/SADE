@@ -61,7 +61,7 @@ m.getXMLViewer = function() { return xmlViewer;};
 m.getCrConfig = function () { return $.extend({}, cr_config);};
 m.setCrConfig = function (a_cr_config) {
     // TODO: sanity checks
-    cr_config = a_cr_config;
+    cr_config = $.extend({}, a_cr_config);
     return m;
 };
 
@@ -365,7 +365,8 @@ m.query = query;
 function load_main(event) {
     event.preventDefault();
     var target = $('#main #results');
-    var targetRequest = baseurl.clone().query($(this).attr('href')).toString();
+    var params = new URI($(this).attr('href')).query(true);
+    var targetRequest = baseurl.clone().query(params).toString();
     //var detailFragment = targetRequest + ' ' + search_container_selector;
     
     if (targetRequest == undefined) return;

@@ -3,9 +3,7 @@
 
 var m = {},
     search_container_selector = MinimalTemplateMain.getSearchContainerSelector(),
-    baseurl = MinimalTemplateMain.getBaseURL(),
-    cr_config = MinimalTemplateMain.getCrConfig();
-    
+    baseurl = MinimalTemplateMain.getBaseURL();    
     m.detail_container_selector = '#detail';
     
 //export
@@ -100,21 +98,20 @@ m.onDetailDataLoaded = function(){};
  * moreover, tabs are optional (or completely disabled) 
  */
 function load_detail_data(targetRequest) {
-    var detail = $('#detail');
-
     if (targetRequest == undefined) return;
-    var parsedUrl = new URI(targetRequest);
-    params = parsedUrl.query(true);
-    // Recreate the x-dataview param from scratch
-    
+    var detail = $('#detail'),
+        parsedUrl = new URI(targetRequest),
+        params = parsedUrl.query(true),
+        cr_config = MinimalTemplateMain.getCrConfig(),
+        classes_interested_in = " .title, .data-view";
+        // Recreate the x-dataview param from scratch
     params["x-dataview"] = cr_config.detail.dataview; //,xmlescaped
-    targetRequest = baseurl.clone().query(params).toString();
     cr_config.params["detail.query"]=params["query"];
+    MinimalTemplateMain.setCrConfig(cr_config);
     // persistentLink();
     // The detail view is hidden at first
     detail.show();
-    var classes_interested_in = " .title, .data-view";
-    var detailFragment = targetRequest + classes_interested_in;
+    var detailFragment = baseurl.clone().query(params).toString() + classes_interested_in;
     
     MinimalTemplateMain.loading(detail.find('.detail-header'),"start");
     // clear the current-detail:
