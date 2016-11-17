@@ -173,13 +173,18 @@ function processParams () {
         cr_config.params = $.extend(cr_config.params, currentUrl.query(true));
         console.log("cr_config.params:")
         console.log(cr_config.params);
-        $('#input-query').val(cr_config.params.query);
         
-        if (cr_config.params["detail.query"]) {
+        if (cr_config.params["detail.query"] || cr_config.params["query"].startsWith("fcs.rf")) {
             
             var detail_params = $.extend({},cr_config.params);
-            detail_params["query"] = cr_config.params["detail.query"]; 
-            detail_params["x-dataview"] = 'title,full'; //,xmlescaped
+            detail_params["query"] = cr_config.params["detail.query"];
+            if (cr_config.params["query"].startsWith("fcs.rf")) {
+                detail_params["query"] = cr_config.params["query"];
+                cr_config.params["detail.query"] = cr_config.params["query"];
+                cr_config.params["query"] = '';
+                $("#main #input-query").val('');
+            }
+            detail_params["x-dataview"] = cr_config.detail.dataview;
            var detail_request = baseurl.clone().query(detail_params).toString();
            console.log("post-loading DETAIL: " + detail_request);
             m.doLoadDetailData(detail_request);
@@ -535,3 +540,10 @@ if (startstop=='start') {
 
 m.loading = loading;
 }(jQuery, URI)
+
+if (!String.prototype.startsWith) {
+  String.prototype.startsWith = function(searchString, position) {
+    position = position || 0;
+    return this.indexOf(searchString, position) === position;
+  };
+}
