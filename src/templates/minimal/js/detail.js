@@ -42,7 +42,7 @@ function minimal_template_ui_setup() {
            console.log(loadParent);
            if (loadParentID != 'fcs-query') {
             event.preventDefault();
-            var targetRequest = baseurl + '?'+$(this).serialize(); // + ' #' + loadParentID;             
+            var targetRequest = baseurl.clone().query($(this).serialize()).toString(); // + ' #' + loadParentID;             
             console.log(targetRequest);
             loadParent.load(targetRequest);            
            }
@@ -68,7 +68,7 @@ function load_context_details(event) {
     $(this).addClass("hilight");
     var target = $('#context-detail');
     detail.find('.navi').toggleClass("cmd_get");
-    targetRequest = baseurl + $(this).attr('href');
+    targetRequest = baseurl.clone().query($(this).attr('href')).toString();
     var detailFragment = targetRequest + " .title, .person";
 
     $(target).load(detailFragment);
@@ -82,7 +82,7 @@ m.load_context_details = load_context_details;
  */
 function load_detail(event) {
     event.preventDefault();
-    targetRequest = baseurl + $(this).attr('href');
+    targetRequest = baseurl.clone().query($(this).attr('href')).toString();
     //load_detail_data(detail_tabs.tabs('option', 'selected'));
     load_detail_data(targetRequest);
 }
@@ -108,7 +108,7 @@ function load_detail_data(targetRequest) {
     // Recreate the x-dataview param from scratch
     
     params["x-dataview"] = cr_config.detail.dataview; //,xmlescaped
-    targetRequest = baseurl + '?' + $.param(params);
+    targetRequest = baseurl.clone().query(params).toString();
     cr_config.params["detail.query"]=params["query"];
     // persistentLink();
     // The detail view is hidden at first
@@ -122,7 +122,7 @@ function load_detail_data(targetRequest) {
   //  detail.find('.detail-header').html('').toggleClass("cmd_get cmd");
     
     //console.log("load_detail:" + detailFragment);
-    //console.log("load_detail:" + baseurl);
+    //console.log("load_detail:" + baseurl.toString());
     detail.find(".detail-content").load(detailFragment, function () {
                         MinimalTemplateMain.loading(detail.find('.detail-header'), "stop");
     //                    detail.find('.detail-header').toggleClass("cmd_get cmd");
@@ -193,7 +193,7 @@ MinimalTemplateMain.doLoadDetailData = load_detail_data;
 					 onSelect: function(dateText, inst) {
 					       console.log(dateText);
 					   // http://localhost:8681/exist/rest/db/sade/projects/stb/stb.xql?operation=searchRetrieve&query=resourcefragment-pid=%221903-01-20%22&x-dataview=full&x-context=clarin.at:icltt:cr:stb&x-format=html           
-					       targetRequest = baseurl + "?operation=searchRetrieve&x-dataview=full&x-dataview=navigation&x-context=clarin.at:icltt:cr:stb&x-format=html&query=resourcefragment-pid=%22" + dateText + "%22";
+					       targetRequest = baseurl.clone().query("?operation=searchRetrieve&x-dataview=full&x-dataview=navigation&x-context=clarin.at:icltt:cr:stb&x-format=html&query=resourcefragment-pid=%22" + dateText + "%22").toString();
 					       loadDetailData(targetRequest);					       
 					       }
 				});

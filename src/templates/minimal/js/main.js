@@ -49,8 +49,7 @@ var m = {},
     baseurl = currentUrl
               .clone()
               .query("")
-              .filename("fcs")
-              .toString();
+              .filename("fcs");
               
 //export
 this.MinimalTemplateMain = m;
@@ -82,7 +81,7 @@ function minimal_template_ui_setup() {
 
 /* not working yet
     $("#resource-filter").QueryInput({params: {                        
-            resource: {label:"Werk", value:"", widget:"selectone", static_source: baseurl + "fcs?version=1.2&operation=scan&scanClause=fcs.resource&x-format=json"},            
+            resource: {label:"Werk", value:"", widget:"selectone", static_source: baseurl.clone().query(?version=1.2&operation=scan&scanClause=fcs.resource&x-format=json")},            
         submit_resource: {value:"filter", label:"", widget:"submit" }},
            onValueChanged: function(v) {console.log(this, v)}
             });
@@ -144,7 +143,6 @@ function minimal_template_ui_setup() {
     $(document).on('submit', "#navigation form", filter_default_nav_results);
   
     $(document).on('submit', "#query-input form", m.query);
-    $('#query-input form #input-query').val(query);
 
     // Dialog Link
     $('#dialog_link').click(function() {
@@ -175,13 +173,14 @@ function processParams () {
         cr_config.params = $.extend(cr_config.params, currentUrl.query(true));
         console.log("cr_config.params:")
         console.log(cr_config.params);
+        $('#input-query').val(cr_config.params.query);
         
         if (cr_config.params["detail.query"]) {
             
             var detail_params = $.extend({},cr_config.params);
             detail_params["query"] = cr_config.params["detail.query"]; 
             detail_params["x-dataview"] = 'title,full'; //,xmlescaped
-           var detail_request = baseurl + '?' + $.param(detail_params);
+           var detail_request = baseurl.clone().query(detail_params).toString();
            console.log("post-loading DETAIL: " + detail_request);
             m.doLoadDetailData(detail_request);
          }
@@ -350,7 +349,7 @@ function query(event) {
     
     var query = $(event.target).find("input[name='query']").val();
     var params = {"query":query, "operation": 'searchRetrieve', "x-dataview": 'title,kwic,facets', "x-format":"html" } ; //,xmlescaped
-    targetRequest = baseurl + '?' + $.param(params);
+    targetRequest = baseurl.clone().query(params).toString();
     cr_config.params["query"] = query;
     // persistentLink();    
     m.load_(target, targetRequest + ' .result-header,.result-body', m.customizeIcons );
@@ -366,7 +365,7 @@ m.query = query;
 function load_main(event) {
     event.preventDefault();
     var target = $('#main #results');
-    var targetRequest = baseurl + $(this).attr('href');
+    var targetRequest = baseurl.clone().query($(this).attr('href')).toString();
     //var detailFragment = targetRequest + ' ' + search_container_selector;
     
     if (targetRequest == undefined) return;
@@ -380,7 +379,7 @@ function load_main(event) {
     
     // Recreate the x-dataview param from scratch    
     params["x-dataview"] = cr_config.main.dataview; //,xmlescaped
-    targetRequest = baseurl + '?' + $.param(params);
+    targetRequest = baseurl.clone().query(params).toString();
     
     m.load_(target,targetRequest, m.customizeIcons );
 }
@@ -436,7 +435,7 @@ function filter_default_nav_results(event) {
     // special hack, to only apply on index-scans
     //if (loadParentID != 'fcs-query') {
         event.preventDefault();
-        var targetRequest = baseurl + '?' + $(this).serialize();
+        var targetRequest = baseurl.clone().query($(this).serialize()).toString();
         // + ' #' + loadParentID;
         console.log(targetRequest);
         //loadParent.load(targetRequest,customizeIcons);
@@ -486,7 +485,7 @@ function extract_header(){
         $('.detail-header .title').after($(this).find(".data-view.navigation"));
         // debug; if released solve differently
         params["x-format"] = "xml";
-        $('.detail-header .data-view.navigation').after('<a class="navigation" href="' + baseurl + '?' + $.param(params) + '">&nbsp;FCS/XML&nbsp;</a>');
+        $('.detail-header .data-view.navigation').after('<a class="navigation" href="' + baseurl.clone().query(params).toString() + '">&nbsp;FCS/XML&nbsp;</a>');
         }
 
 /**
