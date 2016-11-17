@@ -68,6 +68,8 @@ m.setCrConfig = function (a_cr_config) {
 m.doLoadDetail = function() {};
 m.doLoadDetailData = function() {};
 
+m.resultSelectors = '.result-header,.result-body';
+
 /**
  * Initialization for the ui.
  */
@@ -357,7 +359,7 @@ function query(event) {
     targetRequest = baseurl.clone().query(params).toString();
     cr_config.params["query"] = query;
     // persistentLink();    
-    m.load_(target, targetRequest + ' .result-header,.result-body', m.customizeIcons );
+    m.load_(target, targetRequest + ' ' + m.resultSelectors, m.customizeIcons );
 }
 
 m.query = query;
@@ -374,20 +376,15 @@ function load_main(event) {
     var targetRequest = baseurl.clone().query(params).toString();
     //var detailFragment = targetRequest + ' ' + search_container_selector;
     
-    if (targetRequest == undefined) return;
-    var parsedUrl = new URI(targetRequest);
-    params = parsedUrl.query(true);
-    
     cr_config.params["query"] = params["query"];
     
     // set the query into the query input field
     $('#input-query').val(params["query"]);
     
     // Recreate the x-dataview param from scratch    
-    params["x-dataview"] = cr_config.main.dataview; //,xmlescaped
-    targetRequest = baseurl.clone().query(params).toString();
+    params["x-dataview"] = cr_config.main.dataview;
     
-    m.load_(target,targetRequest, m.customizeIcons );
+    m.load_(target,targetRequest + ' ' + m.resultSelectors, m.customizeIcons );
 }
 
 m.load_main = load_main;
