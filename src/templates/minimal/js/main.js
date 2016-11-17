@@ -47,6 +47,7 @@ var m = {},
 //cUrl_.query("");
 //cUrl_.filename("fcs");
     baseurl = currentUrl
+              .clone()
               .query("")
               .filename("fcs")
               .toString();
@@ -54,11 +55,11 @@ var m = {},
 //export
 this.MinimalTemplateMain = m;
 
-m.getCurrentURL = function() { return currentUrl;};
-m.getBaseURL = function() { return baseurl;};
+m.getCurrentURL = function() { return currentUrl.clone();};
+m.getBaseURL = function() { return baseurl.clone();};
 m.getSearchContainerSelector = function() { return search_container_selector;};
 m.getXMLViewer = function() { return xmlViewer;};
-m.getCrConfig = function () { return cr_config;};
+m.getCrConfig = function () { return $.extend({}, cr_config);};
 m.setCrConfig = function (a_cr_config) {
     // TODO: sanity checks
     cr_config = a_cr_config;
@@ -143,6 +144,7 @@ function minimal_template_ui_setup() {
     $(document).on('submit', "#navigation form", filter_default_nav_results);
   
     $(document).on('submit', "#query-input form", m.query);
+    $('#query-input form #input-query').val(query);
 
     // Dialog Link
     $('#dialog_link').click(function() {
