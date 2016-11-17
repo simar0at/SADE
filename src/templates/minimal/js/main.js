@@ -22,8 +22,17 @@ var m = {},
  * configuration object
  * currently only parameter: dataview
 */
-    cr_config = { main: {dataview: "title,facets,kwic"}, detail: { dataview: 'title,cite,navigation,full,facs'},
-                   params: {"x-format":"html"}
+    cr_config = { main: {
+                     dataview: "title,facets,kwic"
+                  },
+                  detail: {
+                     dataview: 'title,cite,navigation,full,facs'
+                  },
+                  params: {
+                    "detail.query": '',
+                    query: '',                    
+                    "x-format":"html"
+                  }
                 },
 
 
