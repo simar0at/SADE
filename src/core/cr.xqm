@@ -123,9 +123,11 @@ declare function cr:resolve-id-to-entry ($x-context as xs:string) as element()* 
     
     for $c in $contexts
         let $id := normalize-space($c),
-            $project := project:get($id),	
-            $mets := if (exists($project)) then $project
-                        else collection(config:path("projects"))//mets:div[@ID eq $id]                     
+            $project := project:get($id),
+            $div := collection(config:path("projects"))//mets:div[@ID eq $id],
+            $mets := if (exists($div)) 
+                     then $div
+                     else $project
             return $mets
 
 };
