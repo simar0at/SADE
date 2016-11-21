@@ -671,6 +671,8 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
         case ($format eq $repo-utils:responseFormatJSon) return	       
 	       let $xslDoc := repo-utils:xsl-doc($operation, $format, $config),
 	           $xslParams:=    <parameters>
+	                               <param name="exist:stop-on-warn" value="no"/>
+	                               <param name="exist:stop-on-error" value="yes"/>
 	                               <param name="format" value="{$format}"/>
 	                               <param name="x-context" value="{$x-context}"/>
 	                               <param name="cr_project" value="{config:param-value($config, 'project-pid')}"/>
@@ -696,6 +698,8 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
 	    case (contains($format, $repo-utils:responseFormatHTML)) return
 	       let $xslDoc :=      repo-utils:xsl-doc($operation, $format, $config),
 	           $xslParams:=    <parameters>
+	                               <param name="exist:stop-on-warn" value="no"/>
+	                               <param name="exist:stop-on-error" value="yes"/>
 	                               <param name="format" value="{$format}"/>
               			           <param name="operation" value="{$operation}"/>
               			           <param name="x-context" value="{$x-context}"/>
@@ -736,7 +740,7 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
 	                   else 
 	                       let $log:=util:log-app("ERROR", $config:app-name, "repo-utils:serialise-as() could not find stylesheet '"||$xslDoc||"' for $operation: "||$operation||", $format: "||$format||".")
 	                       return diag:diagnostics("unsupported-param-value",concat('$operation: ', $operation, ', $format: ', $format))
-	       let $option := util:declare-option("exist:serialize", "method=xhtml media-type=text/html"),
+	       let $option := util:declare-option("exist:serialize", "method=xhtml media-type=text/html indent=no"),
 	           $logRet := util:log-app("TRACE", $config:app-name, "repo-utils:serialise-as return "||substring(serialize($res), 1, 240))
 	       return $res
 	   default return
