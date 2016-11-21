@@ -89,7 +89,7 @@ declare function viewer:display($config-map, $id as xs:string, $project as xs:st
     (:let $debug := 
         let $d := <debug><id>{$id}</id><project>{$project}</project><type>{$type}</type><subtype>{$subtype}</subtype><format>{$format}</format></debug>
         return util:log-app("INFO",$config:app-name,$d):)
-    let $log := util:log-app("DEBUG", $config:app-name, "viewer:display($config-map,"||$id||","||$project||","||$type||","||$subtype||","||$format||")")
+    let $log := util:log-app("TRACE", $config:app-name, "viewer:display($config-map,"||$id||","||$project||","||$type||","||$subtype||","||$format||")")
     let $data := 
                 switch ($type)
                     case 'data' return 
@@ -128,7 +128,7 @@ declare function viewer:display($config-map, $id as xs:string, $project as xs:st
                     
                     case 'redirect' return
                         let $corpusPage := f:get-file-entry('projectCorpusAccessPage', $project)/mets:FLocat/replace(@xlink:href,'^.+/',''),
-                            $corpusURI := project:base-url($project)||"/"||$corpusPage    
+                            $corpusURI := config:param-value($config-map, "base-url")||$corpusPage    
                         let $id-parsed := repo-utils:parse-x-context($id,())
                         let $resource-pid := $id-parsed("resource-pid"),
                             $rf-pid := $id-parsed("resourcefragment-pid")
@@ -136,8 +136,16 @@ declare function viewer:display($config-map, $id as xs:string, $project as xs:st
                             switch (true())
                                 case ($rf-pid!='') return "?detail.query=fcs.rf="||$rf-pid
                                 case ($resource-pid!='') return "?detail.query=fcs.r=*&amp;x-highlight=off&amp;x-context="||$resource-pid
-                                default return ()
-                        return response:redirect-to(xs:anyURI($corpusURI||$q_param))
+                                default return (),
+                            $log := util:log-app("TRACE", $config:app-name, "viewer:display $corpusPage := "||$corpusPage||
+                                                                                        " $corpusURI := "||$corpusURI||
+                                                                                        " $resource-pid := "||$resource-pid||
+                                                                                        " $rf-pid := "||$rf-pid||
+                                                                                        " $q_param := "||$q_param
+                                                                                        ),
+                            $ret := response:redirect-to(xs:anyURI($corpusURI||$q_param)),
+                            $logRet := util:log-app("TRACE", $config:app-name, "viewer:display return redirect "||serialize($ret))
+                        return $ret
                     default return cr:resolve-id-to-entry($id)
     
 (:    let $params := <parameters>
