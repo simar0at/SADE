@@ -361,7 +361,7 @@ m.toc_loaded = toc_loaded;
  */
 function query(event) {
     event.preventDefault();
-    var target = $('#main #results');
+    var target = $('#results');
     
     var query = $(event.target).find("input[name='query']").val();
     var params = {"query":query, "operation": 'searchRetrieve', "x-dataview": 'title,kwic,facets', "x-format":"html" } ; //,xmlescaped
@@ -380,7 +380,7 @@ m.query = query;
  */
 function load_main(event) {
     event.preventDefault();
-    var target = $('#main #results');
+    var target = $('#results');
     var params = new URI($(this).attr('href')).query(true);
     var targetRequest = baseurl.clone().query(params).toString();
     //var detailFragment = targetRequest + ' ' + search_container_selector;
@@ -527,7 +527,7 @@ m.load_in_context_details = load_in_context_details;
 
 function customizeIcons () {
     $('.cmd_prev, .navigation .prev').addClass("ui-icon ui-icon-circle-triangle-w").removeClass("cmd prev cmd_prev");
-    $('.cmd_next, .navigation .next').addClass("ui-icon ui-icon-circle-triangle-e").removeClass("cmd next cmd_next");;
+    $('.cmd_next, .navigation .next').addClass("ui-icon ui-icon-circle-triangle-e").removeClass("cmd next cmd_next");
 }
 
 m.customizeIcons = customizeIcons; 

@@ -84,17 +84,21 @@ function fcs:query($node as node()*, $model as map(*), $query as xs:string?, $x-
     let $x-dataview-x := if ($x-dataview='') then config:param-value($node, $model,'fcs','','x-dataview') else $x-dataview
     
     let $base-path-x := if ($base-path='') then config:param-value($model,'base-url') else $base-path
+    let $queryTypeParam := if (request:get-parameter('queryType', '') ne '') then request:get-parameter('queryType', '') else (),
+        $queryType := if (exists($queryTypeParam)) then $queryTypeParam else
+                      if (substring($query, 1, 1) = '[') then 'native' else ''
     
     (: hardcoded sorting - needs to be optional (currently only used in STB :)
     (:let $cql-query := if (contains($query, 'sortBy')) then $query else concat ($query, " sortBy sort"):)
     let $cql-query := $query 
     let $result := 
 (:       fcs:search-retrieve($query, $x-context, xs:integer($start-item), xs:integer($max-items), $x-dataview, $config):)
-       fcsm:search-retrieve($cql-query, $x-context-x, $startRecord , $maximumRecords, $x-dataview-x, 'xml', $model("config"))
+       fcsm:search-retrieve($cql-query, $x-context-x, $startRecord , $maximumRecords, $x-dataview-x, 'xml', $queryType, $model("config"))
     let $params := <parameters><param name="format" value="{$x-format}"/>
                   			         <param name="base_url" value="{config:param-value($model,'base-url')}"/>
               			            <param name="x-context" value="{$x-context-x}"/>              			            
               			            <param name="x-dataview" value="{$x-dataview-x}"/>
+	                               {if (exists($queryType)) then <param name="queryType" value="{$queryType}"/> else ()}
                   </parameters>
                   
      return repo-utils:serialise-as($result, $x-format, 'searchRetrieve', $model("config"), $params)

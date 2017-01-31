@@ -755,23 +755,25 @@ declare function resource:label($label, $resource-pid as xs:string, $project)  {
 
 (:~  :)
 declare function resource:cite($resource-pid, $project-pid, $config) {
-let $cite-template := config:param-value($config,'cite-template'),
+let $cite-template := repo-utils:protect-space-for-eval(config:param-value($config,'cite-template')),
+    $templateString := "<tei:bibl xmlns='http://www.w3.org/1999/xhtml' xml:space='preserve'>"||$cite-template||"</tei:bibl>",
     $ns := config:param-value($config,'mappings')//namespaces/ns!util:declare-namespace(xs:string(@prefix),xs:anyURI(@uri)),
     $today := format-date(current-dateTime(),'[D]. [M]. [Y]'),
     $md := (resource:dmd-from-id('TEIHDR',  $resource-pid, $project-pid), resource:dmd-from-id($resource-pid, $project-pid))[1],
     $link := resource:link($resource-pid, $project-pid, $config),
     $entity-label := "",
-(:    $log := util:log-app("DEBUG", $config:app-name, "resource:cite $cite-template := "||$cite-template
+(:    $log := util:log-app("DEBUG", $config:app-name, "resource:cite $templateString := "||$templateString
                                                   ||" $ns := "||serialize(config:param-value($config,'mappings')//namespaces/ns)
                                                   ||" $md := "||substring(serialize($md),1,240)
+                                                  ||" $link := "||$link
                                                   ||" $entity-label := "||$entity-label),:)
-    $ret := util:eval ("<tei:bibl xmlns='http://www.w3.org/1999/xhtml'>"||$cite-template||"</tei:bibl>")
+    $ret := util:eval($templateString)
 (:    , $logRet := util:log-app("DEBUG", $config:app-name, "resource:cite return "||substring(serialize($ret),1,240)):)
 return $ret
 };
 
 declare function resource:link($resource-pid, $project-pid, $config) {
-    replace(config:param-value($config, 'base-url-public'),'/$','')||'/'||$project-pid||'/'||'get/'||$resource-pid
+    config:param-value($config, 'base-url-public')||'get/'||$resource-pid
 };
 
 (:~

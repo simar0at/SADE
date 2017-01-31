@@ -32,6 +32,7 @@ declare namespace cr="http://aac.ac.at/content_repository";
 declare namespace xi="http://www.w3.org/2001/XInclude";
 declare namespace xhtml="http://www.w3.org/1999/xhtml";
 
+import module namespace functx = "http://www.functx.com";
 import module namespace xdb="http://exist-db.org/xquery/xmldb";
 import module namespace diag =  "http://www.loc.gov/zing/srw/diagnostic/" at  "../modules/diagnostics/diagnostics.xqm";
 import module namespace request="http://exist-db.org/xquery/request";
@@ -65,11 +66,30 @@ declare variable $repo-utils:sys-config-file := "conf/config-system.xml";
 
 declare function repo-utils:base-url($config as item()*) as xs:string* {
         (: On Jetty 9+ this is actually done by Jetty, exist-db usess Jetty 8 :)
+        (: Additionally: if we want to handle path mangling the original path hast
+           to be passed as non standard request header parameter X-Forwarded-Request-Uri :)
+        (: apache example config on the reverse proxy:
+           SetEnvIf Request_URI "^(.*)$" REQUEST_URI=$1
+           RequestHeader set X-Forwarded-Request-Uri "%{REQUEST_URI}e" :)
     let $mets :=    $config/descendant-or-self::mets:mets[@TYPE='cr-xq project'],
+        $forwarded-hostname := if (contains(request:get-header('X-Forwarded-Host'), ',')) 
+                                 then substring-before(request:get-header('X-Forwarded-Host'), ',')
+                                 else request:get-header('X-Forwarded-Host'),
         $urlScheme := if ((lower-case(request:get-header('X-Forwarded-Proto')) = 'https') or 
                           (lower-case(request:get-header('Front-End-Https')) = 'on')) then 'https:' else 'http:',
-        $realUrl := replace(request:get-url(), '^http:', $urlScheme)
-    return substring-before($realUrl,$config:app-root-collection)||$config:app-root-collection||$mets/xs:string(@OBJID)||"/"     
+        (: FIXME: this is to naive. Works for ProxyPass / to /exist/apps/cr-xq-mets/project
+           but probably not for /x/y/z/ to /exist/apps/cr-xq-mets/project. Especially check the get module. :)
+        $xForwardBasedUrl := $urlScheme||'//'||$forwarded-hostname||substring-before((request:get-header('X-Forwarded-Request-Uri'), request:get-uri())[1], '/')||'/',
+        $existBasedUrl := substring-before(replace(request:get-url(), '^http:', $urlScheme),$config:app-root-collection)||$config:app-root-collection||$mets/xs:string(@OBJID)||"/",        
+(:        $log := util:log-app("DEBUG", $config:app-name, "repo-utils:base-url X-Forwarded-Request-Uri := "||request:get-header('X-Forwarded-Request-Uri')||
+                                                                           " $urlScheme := "||$urlScheme||
+                                                                           " $xForwardBasedUrl := "||$xForwardBasedUrl||
+                                                                           " $existBasedUrl := "||$existBasedUrl),:)
+        $ret := if (request:get-header('X-Forwarded-Request-Uri')) 
+                    then $xForwardBasedUrl
+                    else $existBasedUrl
+(:        , $logRet := util:log-app("DEBUG", $config:app-name, "repo-utils:base-url return "||$ret):)
+    return $ret     
 };
 
 declare function repo-utils:base-uri($config as item()*) as xs:string* {
@@ -684,6 +704,10 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
 	                               <param name="scripts_url" value="{config:param-value($config, 'scripts.url')}"/>
 	                               <param name="site_name" value="{config:param-value($config, 'site.name')}"/>
 	                               <param name="site_logo" value="{config:param-value($config, 'site.logo')}"/>
+	                               {let $x_filter := request:get-parameter('x-filter', '')
+	                                return if ($x_filter ne '') then <param name="x-filter" value="{$x_filter}"/> else ()}
+	                               {let $queryType := request:get-parameter('queryType', '')
+	                                return if ($queryType ne '') then <param name="queryType" value="{$queryType}"/> else ()}
 	                               {$parameters/param}
 	                           </parameters>
 	       let $res := if ($xslDoc) 
@@ -717,6 +741,8 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
 	                               <param name="site_url" value="{config:param-value($config, 'public-baseurl')}"/>
 	                               {let $x_filter := request:get-parameter('x-filter', '')
 	                                return if ($x_filter ne '') then <param name="x-filter" value="{$x_filter}"/> else ()}
+	                               {let $queryType := request:get-parameter('queryType', '')
+	                                return if ($queryType ne '') then <param name="queryType" value="{$queryType}"/> else ()}
               			           {$parameters/param}
               			       </parameters>
 (:	           , $log:=util:log-app("DEBUG", $config:app-name, "repo-utils:serialise-as $xslDoc := "||document-uri($xslDoc)||
@@ -727,7 +753,7 @@ declare function repo-utils:serialise-as($item as node()?, $format as xs:string,
 :)
 	       let $res := if (exists($xslDoc)) 
 	                   then
-	                       let $log := util:log-app("TRACE", $config:app-name, "repo-utils:serialise-as $xslDoc := "||base-uri($xslDoc)||" $xslParams := "||serialize($xslParams))
+	                       let $log := util:log-app("DEBUG", $config:app-name, "repo-utils:serialise-as $xslDoc := "||base-uri($xslDoc)||" $xslParams := "||serialize($xslParams))
 	                       return
 	                          try {
 	                             transform:transform($item,$xslDoc, $xslParams)
@@ -999,4 +1025,8 @@ declare function repo-utils:xinclude-to-fragment($include as element(xi:include)
                         util:log-app("ERROR",$config:app-name, util:serialize($xpAna,'method=xml')),
                         util:log-app("ERROR",$config:app-name, $nsDecls)
                     )}
+};
+
+declare function repo-utils:protect-space-for-eval ($s as xs:string?) as xs:string? {
+    replace($s, '(>|(&gt;))\s', '>&amp;#x20;')
 };
