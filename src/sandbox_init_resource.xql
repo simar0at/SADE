@@ -54,25 +54,24 @@ for $rid in project:list-resource-pids($project-pid)
 let $data  := doc("/db/cr-data/tunico/MalikArchitekt2.xml"),
     $rid := "tunico.5",
     $project-pid := "tunico",
+    $mappings-used-for-toc := ('front','chapter','back','body','index','n','preface','dedication'),
     $resource-label := $data//tei:titleStmt/tei:title
 
 (:~ 1.  uncomment this to add a new resource  :)        
 (:let  $rid := resource:new-with-label($data, $project-pid, $resource-label) :)
 
 (:~ 2. use this to generate/refresh all auxiliary files for given resource :)
-(:let $gen-aux := resource:refresh-aux-files(('front','chapter','back','index'), $rid, $project-pid) return ($rid, $gen-aux):)
+(:let $gen-aux := resource:refresh-aux-files($mappings-used-for-toc, $resource-pid, $project-pid) return $gen-aux:)
 
 (: uncomment this to refresh aux-files for all resources :)
 for $rid in project:list-resource-pids($project-pid)
-    return resource:refresh-aux-files(('front','chapter','back','index'), $rid, $project-pid) 
-    
+    return resource:refresh-aux-files($mappings-used-for-toc, $rid, $project-pid) 
     
     
 (:~ alternatively you can do it one by one:  :)
 (: let $wc-gen :=  wc:generate($resource-pid, $project-pid) return $wc-gen:)
-(: let $rf-gen := rf:generate($resource-pid, $project-pid) return $rf-gen :)
 (: let $lt-gen :=  lt:generate($resource-pid, $project-pid) return $lt-gen:)
-(: let $toc-gen :=  toc:generate(('front','chapter'),  $resource-pid, $project-pid) return ($resource-pid, $toc-gen) :)
+(: let $toc-gen :=  toc:generate($mappings-used-for-toc, $rid, $project-pid) return ($rid, $toc-gen) :)
 
 (:~ 3. if you have links to facsimile/images in the data you can use this to extract them and write them in the project-configuration  :)
 (:let $gen-facs := facs:generate($rid,$project-pid):)

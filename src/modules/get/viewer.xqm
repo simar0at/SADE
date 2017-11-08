@@ -35,6 +35,7 @@ import module namespace index = "http://aac.ac.at/content_repository/index" at  
 import module namespace f = "http://aac.ac.at/content_repository/file" at "../../core/file.xqm";
 import module namespace diag  = "http://www.loc.gov/zing/srw/diagnostic/" at "../diagnostics/diagnostics.xqm";
 import module namespace console = "http://exist-db.org/xquery/console";
+
 declare namespace mets = "http://www.loc.gov/METS/";
 declare namespace xlink="http://www.w3.org/1999/xlink";
 
@@ -89,25 +90,28 @@ declare function viewer:display($config-map, $id as xs:string, $project as xs:st
     (:let $debug := 
         let $d := <debug><id>{$id}</id><project>{$project}</project><type>{$type}</type><subtype>{$subtype}</subtype><format>{$format}</format></debug>
         return util:log-app("INFO",$config:app-name,$d):)
-    let $log := util:log-app("TRACE", $config:app-name, "viewer:display($config-map,"||$id||","||$project||","||$type||","||$subtype||","||$format||")")
+    let $log := util:log-app("DEBUG", $config:app-name, "viewer:display($config-map,"||$id||","||$project||","||$type||","||$subtype||","||$format||")")
+    let $log := console:log("$id "||$id||" $project "||$project||" $type "||$type||" $subtype "||$subtype||" $format "||$format)
     let $data := 
                 switch ($type)
                     case 'data' return 
                         if ($id = $project)
                         then () (: we don't want to return the whole data of a proejct ... :)
-                        else
+                        else 
                             let $id-parsed := repo-utils:parse-x-context($id,()),
                                 $resource-pid := $id-parsed("resource-pid")
-                            (:let $is-restricted := 
+                            let $is-restricted := 
                                 if ($resource-pid!='') 
                                 then index:apply-index(resource:dmd($resource-pid,$project),$viewer:md-is-restriced-indexname,$project,'match')
-                                else  diag:diagnostics('record-does-not-exist','Could determine project-id from supplied id '||$id):)
-                            return cr:resolve-id-to-data($id,false())
-                                (:switch (true())
-                                    case ($resource-pid='') return diag:diagnostics('record-does-not-exist','Could determine project-id from supplied id '||$id) 
-                                    (\:case ($is-restricted) return diag:diagnostics('record-not-authorised-to-send',('access to the data of this resource is restriced. Please refer to its metadata for further information.'))
-                                    case (not($is-restricted instance of xs:boolean)) return diag:diagnostics('general-error','value "'||$is-restricted||'" is unsuitable to determine whether data access is restriced or not'):\)
-                                    default return cr:resolve-id-to-data($id,false()):)
+                                else  diag:diagnostics('record-does-not-exist','Could determine project-id from supplied id '||$id)
+                            let $index := index:index($viewer:md-is-restriced-indexname, $project)
+                            return 
+                                if ($resource-pid='') then diag:diagnostics('record-does-not-exist','Could determine project-id from supplied id '||$id)
+                                else if ($is-restricted) then diag:diagnostics('record-not-authorised-to-send',('access to the data of this resource is restriced. Please refer to its metadata for further information.'))
+                                (: if the index has not been defined, we assume that the data is available freely :)
+                                else if (not(exists($index))) then cr:resolve-id-to-data($id,false()) 
+                                else if (not($is-restricted instance of xs:boolean)) then diag:diagnostics('general-error','value "'||$is-restricted||'" is unsuitable to determine whether data access is restriced or not')
+                                else cr:resolve-id-to-data($id,false())
                     
                     case 'metadata' return
                         if ($id = $project)
@@ -128,7 +132,7 @@ declare function viewer:display($config-map, $id as xs:string, $project as xs:st
                     
                     case 'redirect' return
                         let $corpusPage := f:get-file-entry('projectCorpusAccessPage', $project)/mets:FLocat/replace(@xlink:href,'^.+/',''),
-                            $corpusURI := config:param-value($config-map, "base-url")||$corpusPage    
+                            $corpusURI := project:base-url($project)||"/"||$corpusPage    
                         let $id-parsed := repo-utils:parse-x-context($id,())
                         let $resource-pid := $id-parsed("resource-pid"),
                             $rf-pid := $id-parsed("resourcefragment-pid")
@@ -136,16 +140,8 @@ declare function viewer:display($config-map, $id as xs:string, $project as xs:st
                             switch (true())
                                 case ($rf-pid!='') return "?detail.query=fcs.rf="||$rf-pid
                                 case ($resource-pid!='') return "?detail.query=fcs.r=*&amp;x-highlight=off&amp;x-context="||$resource-pid
-                                default return (),
-                            $log := util:log-app("TRACE", $config:app-name, "viewer:display $corpusPage := "||$corpusPage||
-                                                                                        " $corpusURI := "||$corpusURI||
-                                                                                        " $resource-pid := "||$resource-pid||
-                                                                                        " $rf-pid := "||$rf-pid||
-                                                                                        " $q_param := "||$q_param
-                                                                                        ),
-                            $ret := response:redirect-to(xs:anyURI($corpusURI||$q_param)),
-                            $logRet := util:log-app("TRACE", $config:app-name, "viewer:display return redirect "||serialize($ret))
-                        return $ret
+                                default return ()
+                        return response:redirect-to(xs:anyURI($corpusURI||$q_param))
                     default return cr:resolve-id-to-entry($id)
     
 (:    let $params := <parameters>

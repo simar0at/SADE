@@ -24,7 +24,7 @@ var m = {},
 */
     cr_config = { main: {
                      dataview: "title,facets,kwic"
-                  },
+                },
                   detail: {
                      dataview: 'title,cite,navigation,full,facs'
                   },
@@ -135,11 +135,13 @@ function minimal_template_ui_setup() {
     
     // handle link to explain
     $(document).on('click', "#navigation a.link-explain", m.load_explain);
+    $(document).on('click', "#navigation .indexInfo a", m.load_scan);
     $(document).on('click', "#navigation .zr-indexInfo a.value-caller", m.load_scan);
     
     // handle loading to main (scan -> search) (.content - to distinguish from .header .prev-next) 
     $(document).on('click', "#navigation .load-main .content a", m.load_main);
     // paging in scan
+    $(document).on('click', "#navigation .scan a.internal", m.load_scan);
     $(document).on('click', "#navigation .projectDMD.record .result-navigation.prev-next a", m.load_scan);
     
     //
@@ -219,7 +221,13 @@ function persistentLink() {
 cr_config.params)
     // FIXME: want to just set the location, but not reload page
     // window.location.href=link;
-    $("#persistent-link").attr("href",link);
+    var persistentLink = $("#persistent-link");
+    if (persistentLink.is('input')) {
+        persistentLink.val(link);
+    }
+    if (persistentLink.is('a')) {
+        persistentLink.attr("href",link);       
+    }
     return link;    
 }
 
@@ -296,7 +304,7 @@ function load_scan(event) {
        m.load_(target, targetRequest, function() {               
                 $(target).prepend("<span class='ui-icon ui-icon-close cmd_close' />");
                 close_button = $(target).find(".cmd_close");
-                close_button.click(m.onCloseButtonClicked(target));
+                close_button.click(function(event) { m.onCloseButtonClicked(event, target); });
                 m.customizeIcons();
 
                 target.find("ul").treeview({
@@ -311,7 +319,7 @@ function load_scan(event) {
 
 m.load_scan = load_scan;
 
-function onCloseButtonClicked(target) {
+function onCloseButtonClicked(event, target) {
     target.toggle();
 }
 
@@ -348,10 +356,14 @@ m.load_toc = load_toc;
 function toc_loaded(target, event) {               
     $(target).prepend("<span class='ui-icon ui-icon-close cmd_close' />");
     close_button = $(target).find(".cmd_close");
-    close_button.click(function(){m.onCloseButtonClicked(target)});                     
+    close_button.click(function(event){m.onCloseButtonClicked(event, target)});                     
     // a hack to remove the top element (Work itself)    
     var ul_resource = target.find('ul.resource');
+    // workaround: IE does not append the content of ul.resource ?! jQuery version 1.11.2?
+    var ul_resource_content = ul_resource.html();
     target.find('.scan-index-fcs-toc').html('').append(ul_resource);
+    // workaroung: now in IE we hava a ul.resource without any child nodes :(           
+    target.find('ul.resource').html(ul_resource_content);
 }
 
 m.toc_loaded = toc_loaded;
@@ -367,6 +379,7 @@ function query(event) {
     var params = {"query":query, "operation": 'searchRetrieve', "x-dataview": 'title,kwic,facets', "x-format":"html" } ; //,xmlescaped
     targetRequest = baseurl.clone().query(params).toString();
     cr_config.params["query"] = query;
+    $('#main-show').prop('checked', true);
     // persistentLink();    
     m.load_(target, targetRequest + ' ' + m.resultSelectors, m.customizeIcons );
 }
@@ -381,7 +394,9 @@ m.query = query;
 function load_main(event) {
     event.preventDefault();
     var target = $('#results');
-    var params = new URI($(this).attr('href')).query(true);
+    var params = new URI($(this).attr('href')).query(true);    
+    // Recreate the x-dataview param from scratch    
+    params["x-dataview"] = cr_config.main.dataview;
     var targetRequest = baseurl.clone().query(params).toString();
     //var detailFragment = targetRequest + ' ' + search_container_selector;
     
@@ -390,9 +405,7 @@ function load_main(event) {
     // set the query into the query input field
     $('#input-query').val(params["query"]);
     
-    // Recreate the x-dataview param from scratch    
-    params["x-dataview"] = cr_config.main.dataview;
-    
+    $('#main-show').prop('checked', true);
     m.load_(target,targetRequest + ' ' + m.resultSelectors, m.customizeIcons );
 }
 

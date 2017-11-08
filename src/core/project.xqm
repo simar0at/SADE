@@ -637,37 +637,32 @@ declare function project:list-resources($project) as element(mets:div)* {
 };
 
 declare function project:list-resources-resolved($project) as element(sru:searchRetrieveResponse)* {
-    let $start-time := util:system-dateTime(),
-        $doc:=  if ($project instance of xs:string) 
+    let $start-time := util:system-dateTime()
+    let $doc:=  if ($project instance of xs:string) 
                 then project:get($project)
-                else $project,
-        $ress := project:list-resources($doc),
-        $project-id := data($doc/@OBJID),
-        $groupuing-index-exists := exists($doc//index[@key="fcs.resource-group-by"]),
-        $count := count($ress),
-        $resources := for $res in $ress 
-        let $dmd := resource:dmd($res, $project ),
-            $res-id := $res/data(@ID),
-            $res-label := $res/data(@LABEL),
-            $res-title := (if (exists($dmd)) then index:apply-index($dmd,'resource.title',$project)//text() else $res-label, $res-label)[1],
-            $res-x-context := data($res/@ID),
-            $data := repo-utils:context-to-data($res-x-context[1], $project),
-            $res-group := if ($groupuing-index-exists) then xs:string(index:apply-index($data, 'fcs.resource-group-by', $project-id, 'match')[1]) else "",
-            $res-cite := resource:cite($res-id, $project-id, $doc ),
-            $indexImage-path := resource:path($res-id, $project-id, 'indexImage')
+                else $project
+    let $ress := project:list-resources($doc)
+    let $project-id := data($doc/@OBJID)
+    let $count := count($ress)
+    let $resources := for $res in $ress 
+        let $dmd := resource:dmd($res, $project )        
+        let $res-id := $res/data(@ID)
+        let $res-label := $res/data(@LABEL)
+        let $res-title := (if (exists($dmd)) then index:apply-index($dmd,'resource.title',$project)//text() else $res-label, $res-label)[1]
+        let $res-cite := resource:cite($res-id, $project-id, $doc )
+        
+        let $indexImage-path := resource:path($res-id, $project-id, 'indexImage')
         order by $res/@ORDER
         return <fcs:Resource pid="{$res-id}" >
                  <fcs:DataView type="title">{$res-title}</fcs:DataView>
                  <fcs:DataView type="cite">{$res-cite}</fcs:DataView>          
                  <fcs:DataView type="metadata">{$dmd}</fcs:DataView>
                  {if ($indexImage-path != '') then <fcs:DataView type="image" ref="{$indexImage-path}" /> else ()}
-                 {if ($groupuing-index-exists) then <fcs:DataView type="facets">{$res-group}</fcs:DataView> else () }
-               </fcs:Resource>,
+               </fcs:Resource>
                
-        $end-time := util:system-dateTime(),
+     let $end-time := util:system-dateTime(),
 (:<sru:baseUrl>{repo-utils:config-value($config, "base.url")}</sru:baseUrl>:)
-        $ret := 
-         <sru:searchRetrieveResponse>
+         $ret := <sru:searchRetrieveResponse>
             <sru:version>1.2</sru:version>
             <sru:numberOfRecords>{$count}</sru:numberOfRecords>
             <sru:echoedSearchRetrieveRequest>
@@ -682,17 +677,18 @@ declare function project:list-resources-resolved($project) as element(sru:search
                   <fcs:returnedRecords>{$count}</fcs:returnedRecords>                                
                   <fcs:duration>{$end-time - $start-time }</fcs:duration>                                
             </sru:extraResponseData>
-            <sru:records>{for $res at $pos in $resources
+                            <sru:records>
+                            {for $res at $pos in $resources
             return <sru:record>
                          <sru:recordSchema>http://clarin.eu/fcs/1.0/Resource.xsd</sru:recordSchema>
                          <sru:recordPacking>xml</sru:recordPacking>
                          <sru:recordData>{$res}</sru:recordData>
                          <sru:recordPosition>{$pos}</sru:recordPosition>
                          <sru:recordIdentifier>{xs:string($res/@pid)}</sru:recordIdentifier>
-                    </sru:record>}                                	          
+                                	          </sru:record> }                                	          
             </sru:records>                            
         </sru:searchRetrieveResponse>,
-        $logRet := util:log-app("TRACE", $config:app-name, "project:list-resources-resolved retrun "||substring(serialize($ret), 1, 240))
+            $logRet := util:log-app("TRACE",$config:app-name,"project:list-resources-resolved return "||substring(serialize($ret), 1, 240)) 
     return $ret
 };
 
@@ -1213,5 +1209,5 @@ declare %private function project:termlabel-new-filename($project-pid as xs:stri
 };
 
 declare function project:base-url($project-pid as xs:string) as xs:string {
-    config:param-value((),'base-url-public')||"/"||$project-pid
+    config:param-value(project:get($project-pid),'base-url-public')
 };

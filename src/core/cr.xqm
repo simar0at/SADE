@@ -30,6 +30,7 @@ import module namespace config="http://exist-db.org/xquery/apps/config" at "conf
 import module namespace repo-utils="http://aac.ac.at/content_repository/utils" at "repo-utils.xqm";
 import module namespace project="http://aac.ac.at/content_repository/project" at "project.xqm";
 import module namespace resource="http://aac.ac.at/content_repository/resource" at "resource.xqm";
+import module namespace console = "http://exist-db.org/xquery/console";
 
 declare namespace xlink="http://www.w3.org/1999/xlink";
 declare namespace mets = "http://www.loc.gov/METS/";

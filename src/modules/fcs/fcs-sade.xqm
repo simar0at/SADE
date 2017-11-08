@@ -26,7 +26,7 @@ SOFTWARE
 
 module namespace fcs="http://sade/fcs";
 
-import module namespace templates="http://exist-db.org/xquery/templates" at "templates.xql";
+import module namespace templates="http://exist-db.org/xquery/templates" at "../../core/templates.xql";
 import module namespace kwic="http://exist-db.org/xquery/kwic"
     at "resource:org/exist/xquery/lib/kwic.xql";
 import module namespace config="http://exist-db.org/xquery/apps/config" at "../../core/config.xqm";
@@ -59,7 +59,7 @@ function fcs:query-input($node as node()*, $model as map(*), $query as xs:string
                   </parameters>
                   (:<param name="base_url" value="{$base-path}"/>:)
                   
-     return  repo-utils:serialise-as($template, $x-format, 'static', $model("config"), $params)
+     return  repo-utils:serialise-as($template, $x-format, 'static', $model("config"), $x-context, $params, 'fcs')
      
 };
 
@@ -101,7 +101,7 @@ function fcs:query($node as node()*, $model as map(*), $query as xs:string?, $x-
 	                               {if (exists($queryType)) then <param name="queryType" value="{$queryType}"/> else ()}
                   </parameters>
                   
-     return repo-utils:serialise-as($result, $x-format, 'searchRetrieve', $model("config"), $params)
+     return repo-utils:serialise-as($result, $x-format, 'searchRetrieve', $model("config"), $x-context, $params, 'fcs')
      
 };
 
@@ -137,7 +137,7 @@ $x-context as xs:string*, $x-format as xs:string?, $base-path as xs:string?) {
         $log := util:log-app("TRACE", $config:app-name, "SADE fcs:scan $x-context-x := "||$x-context-x||", $scan := "||substring(serialize($scan),1,240)||"..."),
         $params := <parameters>
                         <param name="format" value="{$x-format}"/>
-                  		<param name="base_url" value="{concat(config:param-value($model,'base-url'),'fcs')}"/>
+                  		<param name="base_url" value="{config:param-value($model,'base-url')}"/>
                   		{if ($sort != '') then <param name="sort" value="{$sort}"/> else ()}	         
               			<param name="x-context" value="{$x-context-x}"/>             			            
                   </parameters>,
@@ -160,7 +160,7 @@ function fcs:explain($node as node()*, $model as map(*), $x-context as xs:string
         $log := util:log-app("TRACE", $config:app-name, "SADE fcs:explain $x-context-x := "||$x-context-x||", $explain := "||substring(serialize($explain),1,240)||"..."),
         $transformParams := <parameters>
                                <param name="format" value="{$x-format}"/>
-                  		       <param name="base_url" value="{concat(config:param-value($model,'base-url'),'fcs')}"/>	         
+                  		       <param name="base_url" value="{config:param-value($model,'base-url')}"/>	         
               			       <param name="x-context" value="{$x-context-x}"/>             			            
                             </parameters>,
         $ret := repo-utils:serialise-as($explain, $x-format, 'explain', $model("config"), $transformParams),

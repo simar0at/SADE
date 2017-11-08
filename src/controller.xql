@@ -48,7 +48,7 @@ declare variable $exist:root external;
  : actual location in the database should be autogmagically resolved by config:resolve-template-to-uri().
  : This is used to serve files which reside in 'templates'.  
 ~:)
-declare variable $local:web-resources := ('js', 'css', 'png', 'jpg', 'gif', 'pdf', 'ttf', 'woff', 'woff2', 'eot', 'ico');
+declare variable $local:web-resources := ('js', 'map', 'css', 'png', 'jpg', 'gif', 'pdf', 'ttf', 'woff', 'woff2', 'eot', 'ico');
 
 (: This way to big switch statement defines the behavior of car-xq-mets.
    FIXME: urgently needs to be split into readable blocks (that is functions)
@@ -581,7 +581,7 @@ declare function local:user-may($project as xs:string) as xs:boolean {
         (: login:set-user() must go before checking the user :) 
         let $login:=login:set-user($domain, (), false()),
             $full-config-map-with-uid := map:new(($full-config-map, map{'userId' := sm:id()})),
-            $logId := util:log-app("DEBUG",$config:app-name,"controller user-may sm:id() "||substring(serialize($full-config-map-with-uid('userId')), 1, 240000))
+            $logId := util:log-app("TRACE",$config:app-name,"controller user-may sm:id() "||substring(serialize($full-config-map-with-uid('userId')), 1, 240000))
         
         let $allowed-users :=  tokenize(config:param-value($full-config-map-with-uid,'users'),'\s*,\s*'),
             $log := util:log-app("TRACE",$config:app-name,"controller user-may $allowed-users := "||string-join($allowed-users, ', '))

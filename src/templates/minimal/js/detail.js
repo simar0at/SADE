@@ -3,7 +3,7 @@
 
 var m = {},
     search_container_selector = MinimalTemplateMain.getSearchContainerSelector(),
-    baseurl = MinimalTemplateMain.getBaseURL();    
+    baseurl = MinimalTemplateMain.getBaseURL();
     m.detail_container_selector = '#detail';
     
 //export
@@ -21,16 +21,17 @@ function minimal_template_ui_setup() {
     $(document).on("click", '.result-body a', load_detail);
         
     $(document).on("click", "#navigation .load-detail a", load_detail);
+    $('.result-body a').live("click", load_detail);
     // navigation links target:#detail itself
-    $(document).on("click", '#detail .navigation a', load_detail);	   
+    $(document).on("click", m.detail_container_selector + ' .navigation a', load_detail);	   
                       
 
     // links inside the detail-view (person-links) target:#context-detail
-    $(document).on("click", '#detail .data-view.full a', load_context_details);
+    $(document).on("click", m.detail_container_selector + ' .data-view.full a', load_context_details);
 
 // navigation links target:#detail itself
-    $(document).on("click", '#detail .navigation a', load_detail);
-        
+    $(document).on("click", m.detail_container_selector + ' .navigation a', load_detail);
+    
 // register filter
         $(document).on("submit", "#left form", function(event) {           
            console.log ( $(this));
@@ -54,7 +55,7 @@ function minimal_template_ui_setup() {
          var detailFragment = targetRequest + ' ' + search_container_selector;         
          $(target).load(detailFragment);
          
-    });   
+    });
 }
 
 $(minimal_template_ui_setup);
@@ -99,12 +100,12 @@ m.onDetailDataLoaded = function(){};
  */
 function load_detail_data(targetRequest) {
     if (targetRequest == undefined) return;
-    var detail = $('#detail'),
+    var detail = $(m.detail_container_selector),
         parsedUrl = new URI(targetRequest),
         params = parsedUrl.query(true),
         cr_config = MinimalTemplateMain.getCrConfig(),
         classes_interested_in = " .title, .data-view";
-        // Recreate the x-dataview param from scratch
+    // Recreate the x-dataview param from scratch
     params["x-dataview"] = cr_config.detail.dataview; //,xmlescaped
     cr_config.params["detail.query"]=params["query"];
     MinimalTemplateMain.setCrConfig(cr_config);
@@ -114,36 +115,30 @@ function load_detail_data(targetRequest) {
     var detailFragment = baseurl.clone().query(params).toString() + classes_interested_in;
     
     MinimalTemplateMain.loading(detail.find('.detail-header'),"start");
-    // clear the current-detail:
-//    detail.find(".detail-content").html('');
-  //  detail.find('.detail-header').html('').toggleClass("cmd_get cmd");
-    
-    //console.log("load_detail:" + detailFragment);
-    //console.log("load_detail:" + baseurl.toString());
     detail.find(".detail-content").load(detailFragment, function () {
-                        MinimalTemplateMain.loading(detail.find('.detail-header'), "stop");
-    //                    detail.find('.detail-header').toggleClass("cmd_get cmd");
-                        
-                        // activate zoom functionality on the images, expects: jquery.elevateZoom-3.0.8.min.js
-                        // deactivated for now
-                        //detail.find(".data-view.facs img").each( function() {$(this).attr("data-zoom-image",$(this).attr("src")); });
-                        //detail.find(".data-view.facs img").elevateZoom({ zoomType : "lens", lensShape : "round", lensSize : 200 });
+      var img =  detail.find(".detail-content img"),
+          imgLoadFinished = $.Deferred(),
+          self = this;
+      if (img.length === 1) {
+        img.one("load", function() {
+          imgLoadFinished.resolve();
+        }).each(function() {
+          if(this.complete) $(this).load();
+        });
+      } else {
+        imgLoadFinished.resolve();
+      }
+      imgLoadFinished.then(function(){
+                        MinimalTemplateMain.loading(detail.find('.detail-header'),"stop");
                          
                         // move Title and navigation above the content
-                        $('.detail-header').html($(this).find(".data-view.navigation")).append($(this).find(".title"));
+                        $('.detail-header').html($(self).find(".data-view.navigation")).append($(self).find(".title"));
                         // move cite below the detail content
-                        detail.find('.context-detail').html($(this).find(".data-view.cite"));
-                        MinimalTemplateMain.customizeIcons(); 
-                        /*
-                        var detail_anno = $(this).html();
-                        $('#tabs-1').html(detail_anno);
-                        // get rid-off the highlighted stuff                        
-                        $('#tabs-1').find("span").removeClass("persName bibl placeName");
-                        // get rid-off the links
-                        $('#tabs-1').find('a').replaceWith(function(){  return $(this).contents();});
-                        */
-                        m.onDetailDataLoaded.call(this);                        
+                        detail.find('.context-detail').html($(self).find(".data-view.cite"));
+                        MinimalTemplateMain.customizeIcons();
+                        m.onDetailDataLoaded.call(self);                        
                       });
+      });
 }
 
 m.load_detail_data = load_detail_data;

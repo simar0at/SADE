@@ -282,7 +282,7 @@ declare function rf:generate($resource-pid as xs:string, $project-pid as xs:stri
             (: extract fragments and create wrapper elements for each :)
             (:let $all-fragments:=util:eval("$working-copy//"||$rf:xpathexpr):)
             let $all-fragments := index:apply-index($working-copy,'rf',$project-pid),
-                $log := util:log-app("DEBUG",$config:app-name, "rf:generate found "||count($all-fragments)||" fragments")
+                $log := util:log-app("TRACE",$config:app-name, "rf:generate found "||count($all-fragments)||" fragments")
             
             (:let $fragment-element-has-content:=some $x in $all-fragments satisfies exists($x/node()):)
             let $fragments-extracted:=
@@ -291,7 +291,7 @@ declare function rf:generate($resource-pid as xs:string, $project-pid as xs:stri
                     let $id := $resource-pid||$config:RESOURCE_RESOURCEFRAGMENT_ID_SUFFIX||$pos
                     (:let $label := util:eval("$pb1/"||$rf:xpathexpr-label):)
                     let $label := index:apply-index($pb1, "rf", $project-pid, "label-only")
-                    let $fragment:=
+                    let $fragment-initial:=
                         if (exists($pb1/node()))
                         then 
                             ($pb1, util:log-app("TRACE",$config:app-name,"rf:generate copying resourcefragment w/ pid="||xs:string($id)))
@@ -303,8 +303,10 @@ declare function rf:generate($resource-pid as xs:string, $project-pid as xs:stri
                                             (: Note the following replace() are workaround hacks for exist-db pecularities that might not be needed in
                                                future versions :)
                                         let $frag := replace(
+                                                     replace(
                                                         util:get-fragment-between($pb1, $pb2, true(), true()),
                                                     '&amp;#039;', "'"),
+                                                    '&amp;quot;', '&quot;'),
                                             $analyzed :=  analyze-string($frag,'&amp;(amp;)?'),
                                             $replaced := string-join((for $i in $analyzed/* return if($i/self::fn:non-match) then $i else '&amp;amp;'),''),
                                             $ret := try {
@@ -317,6 +319,7 @@ declare function rf:generate($resource-pid as xs:string, $project-pid as xs:stri
                                             }
                                         return  $ret                   
 (:                                       else util:parse-html(util:get-fragment-between($pb1, $pb2, true(), true()))/HTML/BODY/*:)
+                    let $fragment := rf:fix-pb-first-element($fragment-initial, node-name($pb1))
                     return
                         element {
                             QName(
@@ -371,21 +374,57 @@ declare function rf:generate($resource-pid as xs:string, $project-pid as xs:stri
 
 
 declare function rf:cite($resourcefragment-pid, $resource-pid, $project-pid, $config) {
-let $cite-template := config:param-value($config,'cite-template'),
+let $cite-template := repo-utils:protect-space-for-eval(config:param-value($config,'cite-template')),
+    $templateString := "<tei:bibl xmlns='http://www.w3.org/1999/xhtml' xml:space='preserve'>"||$cite-template||"</tei:bibl>",
     $ns := config:param-value($config,'mappings')//namespaces/ns!util:declare-namespace(xs:string(@prefix),xs:anyURI(@uri)),
     $today := format-date(current-dateTime(),'[D]. [M]. [Y]'),
     $md := (resource:dmd-from-id('TEIHDR',  $resource-pid, $project-pid), resource:dmd-from-id($resource-pid, $project-pid))[1],
-    $link := resource:link($resource-pid, $project-pid, $config),
+    $link := config:param-value($config, 'base-url-public')||'get/'||$resourcefragment-pid,
     $entity-label := rf:record($resourcefragment-pid,$resource-pid, $project-pid)/data(@LABEL),
-    $log := util:log-app("DEBUG", $config:app-name, "resource:cite $cite-template := "||$cite-template
+(:    $log := util:log-app("DEBUG", $config:app-name, "rf:cite $templateString := "||$templateString
                                                   ||" $ns := "||serialize(config:param-value($config,'mappings')//namespaces/ns)
                                                   ||" $md := "||substring(serialize($md),1,240)
-                                                  ||" $entity-label := "||$entity-label),
-    $ret := util:eval ("<tei:bibl xmlns='http://www.w3.org/1999/xhtml'>"||$cite-template||"</tei:bibl>")
-(:    , $logRet := util:log-app("DEBUG", $config:app-name, "resource:cite return "||substring(serialize($ret),1,240)):)
+                                                  ||" $entity-label := "||$entity-label),:)
+    $ret := util:eval($templateString)
+(:    , $logRet := util:log-app("DEBUG", $config:app-name, "rf:cite return "||substring(serialize($ret),1,500)):)
 return $ret
 };
 
 declare function rf:link($rf-id, $resource-pid, $project-pid, $config) {
     replace(config:param-value($config, 'base-url-public'),'/$','')||'/'||$project-pid||'/'||'get/'||$rf-id
 };
+
+(: The pagebreak element needs to be the very first element so lucene searches can be transposed between working copy
+ : and the resource fragments. If xml:space preserve is set the first generated element in a split paragraph is some
+ : indention whitespace. :) 
+declare %private function rf:fix-pb-first-element($fragment-initial as node(), $pb1 as xs:QName) as node() {
+    let $pb-parent := $fragment-initial//*[node-name(.) = $pb1]/parent::*,
+        $first-pb-parent-node := $pb-parent/(text()|*)[1],
+        $first-empty-text-node := if ($first-pb-parent-node instance of text() and 
+                                      normalize-space($first-pb-parent-node) eq '') then $first-pb-parent-node else (),
+        $log :=  util:log-app("TRACE",$config:app-name,"rf:fix-pb-first-element $pb-parent := "||substring(serialize($pb-parent), 1, 240)),
+        $ret := if ($pb-parent[@xml:space = 'preserve']) then rf:remove-node-deeep($fragment-initial, $first-empty-text-node) else $fragment-initial,
+        $logRet := util:log-app("TRACE",$config:app-name,"rf:fix-pb-first-element return pb parent"||substring(serialize($ret//*[node-name(.) = $pb1]/parent::*), 1, 240))
+    return $ret
+};
+
+(: Transformation function inspired by functx:remove-elements-deep (which uses a name, not a particular node) :)
+declare %private function rf:remove-node-deeep($nodes as node()*, $remove-node as node()?) as node()* {
+   for $node in $nodes
+   return
+     if ($node instance of element())
+     then if (generate-id($node) eq generate-id($remove-node))
+          then ()
+          else element { node-name($node)}
+                { $node/@*,
+                  rf:remove-node-deeep($node/node(), $remove-node)}
+     else if ($node instance of document-node())
+     then rf:remove-node-deeep($node/node(), $remove-node)
+     else if ($node instance of text())
+     then if (generate-id($node) eq generate-id($remove-node))
+          then ()
+          else $node
+     else $node
+};
+
+
